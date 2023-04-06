@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useRouter } from "next/router";
 import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import StrongPassword from "@/components/StrongPassword";
+import Loading from "@/components/Loading";
 import {
   checkCharacterNumber,
   checkSpecialCharacter,
@@ -11,21 +13,35 @@ import {
   checkEmail,
 } from "@/libs/utils";
 
+import { ResetPassword } from "@/libs/cognito";
+
 const Code = () => {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState<Boolean>(false);
   const [code, setCode] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [email, setEmail] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<Boolean>(false);
 
-  const resetPassword = () => {
-    console.log("Reset Password");
+  const resetPassword = async () => {
+    try {
+      setIsLoading(true);
+      await ResetPassword(email, password, code);
+      setIsLoading(false);
+      router.push("/");
+    } catch (err) {
+      if (err instanceof Error) {
+        alert(err.message);
+        console.log(err.message);
+      }
+    }
   };
 
   return (
     <div className="w-full bg-[#fff]">
       <Header />
       <div className="w-full flex justify-center py-8">
-        <div className="w-4/5 sm:w-[60%]">
+        <div className={`w-4/5 sm:w-[60%] ${isLoading && "opacity-40"}`}>
           <div className="text-[2rem] text-[#212529] font-bold">
             Reset password
           </div>
@@ -121,6 +137,7 @@ const Code = () => {
             </button>
           </div>
         </div>
+        {isLoading && <Loading />}
       </div>
     </div>
   );

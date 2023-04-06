@@ -1,30 +1,41 @@
 import { useState } from "react";
+import { useRouter } from "next/router";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import { Inter } from "next/font/google";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import Loading from "@/components/Loading";
 import { checkEmail } from "@/libs/utils";
 
-const inter = Inter({ subsets: ["latin"] });
+import { signIn } from "@/libs/cognito";
 
-export default function Home() {
+const Home = () => {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState<Boolean>(false);
-
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [isEmailError, setIsEmailError] = useState<Boolean>(false);
   const [isPasswordError, setIsPasswordError] = useState<Boolean>(false);
+  const [isLoading, setIsLoading] = useState<Boolean>(false);
 
-  const submit = () => {
+  const submit = async () => {
     setIsEmailError(email == "" || !checkEmail(email));
     setIsPasswordError(password == "");
-    console.log("password:", password);
+
     if (email != "" && checkEmail(email) && password != "") {
-      console.log("Sign in");
+      try {
+        setIsLoading(true);
+        await signIn(email, password);
+        setIsLoading(false);
+        router.push(process.env.NEXT_PUBLIC_REDIRECT_URL || "");
+      } catch (err: any) {
+        alert(err.message);
+        console.log(err.message);
+      }
     }
   };
+
   return (
     <div>
       <Head>
@@ -35,11 +46,15 @@ export default function Home() {
       </Head>
       <div className="w-full bg-[#fff]">
         <Header />
-        <div className="w-full flex justify-center py-8">
+        <div
+          className={`w-full flex justify-center py-8 ${
+            isLoading && "opacity-40"
+          }`}
+        >
           <div className="w-4/5 sm:w-[60%]">
             <div className="text-[2rem] text-[#212529] font-bold">Sign in</div>
             <div className="text-base text-[#212529] font-medium py-2">
-              New to PrivateAuto?&nbsp;
+              New to Here?&nbsp;
               <Link href="/signup">
                 <span className="text-[#00b3de] underline">
                   Create an account
@@ -140,7 +155,10 @@ export default function Home() {
             <Footer />
           </div>
         </div>
+        {isLoading && <Loading />}
       </div>
     </div>
   );
-}
+};
+
+export default Home;

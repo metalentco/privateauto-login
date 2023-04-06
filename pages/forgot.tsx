@@ -2,24 +2,39 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
+import Loading from "@/components/Loading";
+
+import { requestVerificationCode } from "@/libs/cognito";
 
 const Forgot = () => {
   const router = useRouter();
   const [email, setEmail] = useState<string>("");
   const [isBtnEnabled, setIsBtnEnabled] = useState<Boolean>(false);
+  const [isLoading, setIsLoading] = useState<Boolean>(false);
 
   const regex = new RegExp(
     "([!#-'*+/-9=?A-Z^-~-]+(.[!#-'*+/-9=?A-Z^-~-]+)*|\"([]!#-[^-~ \t]|(\\[\t -~]))+\")@([!#-'*+/-9=?A-Z^-~-]+(.[!#-'*+/-9=?A-Z^-~-]+)*|[[\t -Z^-~]*])"
   );
 
-  const resetPassword = () => {
-    router.push("/code");
+  const resetPassword = async () => {
+    try {
+      setIsLoading(true);
+      await requestVerificationCode(email);
+      setIsLoading(false);
+      router.push("/code");
+    } catch (err) {
+      if (err instanceof Error) {
+        alert(err.message);
+        console.log(err.message);
+      }
+    }
   };
+
   return (
     <div className="w-full bg-[#fff]">
       <Header />
       <div className="w-full flex justify-center py-8">
-        <div className="w-4/5 sm:w-[60%]">
+        <div className={`w-4/5 sm:w-[60%] ${isLoading && "opacity-40"}`}>
           <div className="text-[2rem] text-[#212529] font-bold">
             Forgot Password?
           </div>
@@ -64,6 +79,7 @@ const Forgot = () => {
             *check your email for your password reset code
           </div>
         </div>
+        {isLoading && <Loading />}
       </div>
     </div>
   );

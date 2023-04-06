@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useRouter } from "next/router";
 import Link from "next/link";
 import Image from "next/image";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import StrongPassword from "@/components/StrongPassword";
+import Loading from "@/components/Loading";
 import {
   checkCharacterNumber,
   checkSpecialCharacter,
@@ -12,9 +14,11 @@ import {
   checkEmail,
 } from "@/libs/utils";
 
-const Signup = () => {
-  const [showPassword, setShowPassword] = useState<Boolean>(false);
+import { signUp } from "@/libs/cognito";
 
+const Signup = () => {
+  const router = useRouter();
+  const [showPassword, setShowPassword] = useState<Boolean>(false);
   const [email, setEmail] = useState<string>("");
   const [firstname, setFirstname] = useState<string>("");
   const [lastname, setLastname] = useState<string>("");
@@ -22,8 +26,9 @@ const Signup = () => {
   const [isEmailError, setIsEmailError] = useState<Boolean>(false);
   const [isFirstnameError, setIsFirstnameError] = useState<Boolean>(false);
   const [isLastnameError, setIsLastnameError] = useState<Boolean>(false);
+  const [isLoading, setIsLoading] = useState<Boolean>(false);
 
-  const create = () => {
+  const create = async () => {
     setIsEmailError(email == "" || !checkEmail(email));
     setIsFirstnameError(firstname == "");
     setIsLastnameError(lastname == "");
@@ -37,14 +42,23 @@ const Signup = () => {
       checkUpperLower(password) &&
       checkNumber(password)
     ) {
-      console.log("create account");
+      try {
+        setIsLoading(true);
+        await signUp(email, password);
+        setIsLoading(false);
+        router.push("/");
+      } catch (err: any) {
+        alert(err.message);
+        console.log(err.message);
+      }
     }
   };
+
   return (
     <div className="w-full bg-[#fff]">
       <Header />
       <div className="w-full flex justify-center py-8">
-        <div className="w-4/5 sm:w-[60%]">
+        <div className={`w-4/5 sm:w-[60%] ${isLoading && "opacity-40"}`}>
           <div className="text-[2rem] text-[#212529] font-bold">
             Create an account
           </div>
@@ -167,6 +181,7 @@ const Signup = () => {
           <hr className="text-[#c4c4c4] my-2" />
           <Footer />
         </div>
+        {isLoading && <Loading />}
       </div>
     </div>
   );
