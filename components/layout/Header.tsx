@@ -3,6 +3,7 @@ import Image from "next/image";
 const Header = () => {
   const closeLoginApp = () => {
     window.parent.postMessage("close", "*");
+    console.log("close event was emmitted");
   };
   return (
     <div className="w-full flex justify-between px-8 py-4">
