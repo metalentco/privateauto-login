@@ -37,7 +37,7 @@ const Code = () => {
       if (err instanceof Error) {
         window.parent.postMessage(
           {
-            formSubmitted: true,
+            formSubmitted: false,
             formName: "resetPassword",
             error: err.message,
           },

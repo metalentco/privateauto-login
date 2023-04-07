@@ -30,7 +30,7 @@ const Forgot = () => {
       if (err instanceof Error) {
         window.parent.postMessage(
           {
-            formSubmitted: true,
+            formSubmitted: false,
             formName: "forgot",
             error: err.message,
           },
