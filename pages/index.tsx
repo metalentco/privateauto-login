@@ -28,11 +28,14 @@ const Home = () => {
         setIsLoading(true);
         await signIn(email, password);
         window.parent.postMessage(
-          { formSubmitted: true, formName: "signin" },
+          {
+            formSubmitted: true,
+            formName: "signin",
+            redirectURL: process.env.NEXT_PUBLIC_REDIRECT_URL,
+          },
           "*"
         );
         setIsLoading(false);
-        router.push(process.env.NEXT_PUBLIC_REDIRECT_URL || "");
       } catch (err: any) {
         window.parent.postMessage(
           {
