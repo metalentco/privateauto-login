@@ -27,11 +27,23 @@ const Code = () => {
     try {
       setIsLoading(true);
       await ResetPassword(email, password, code);
+      window.parent.postMessage(
+        { formSubmitted: true, formName: "resetPassword" },
+        "*"
+      );
       setIsLoading(false);
       router.push("/");
     } catch (err) {
       if (err instanceof Error) {
-        alert(err.message);
+        window.parent.postMessage(
+          {
+            formSubmitted: true,
+            formName: "resetPassword",
+            error: err.message,
+          },
+          "*"
+        );
+        setIsLoading(false);
         console.log(err.message);
       }
     }

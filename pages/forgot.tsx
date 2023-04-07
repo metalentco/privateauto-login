@@ -20,11 +20,23 @@ const Forgot = () => {
     try {
       setIsLoading(true);
       await requestVerificationCode(email);
+      window.parent.postMessage(
+        { formSubmitted: true, formName: "forgot" },
+        "*"
+      );
       setIsLoading(false);
       router.push("/code");
     } catch (err) {
       if (err instanceof Error) {
-        alert(err.message);
+        window.parent.postMessage(
+          {
+            formSubmitted: true,
+            formName: "forgot",
+            error: err.message,
+          },
+          "*"
+        );
+        setIsLoading(false);
         console.log(err.message);
       }
     }

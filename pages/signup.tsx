@@ -45,10 +45,18 @@ const Signup = () => {
       try {
         setIsLoading(true);
         await signUp(email, password);
+        window.parent.postMessage(
+          { formSubmitted: true, formName: "signup" },
+          "*"
+        );
         setIsLoading(false);
         router.push("/");
       } catch (err: any) {
-        alert(err.message);
+        window.parent.postMessage(
+          { formSubmitted: false, formName: "signup", error: err.message },
+          "*"
+        );
+        setIsLoading(false);
         console.log(err.message);
       }
     }

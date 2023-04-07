@@ -34,3 +34,14 @@ a {
     color-scheme: dark;
   }
 }
+
+/* Hide the scrollbar */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Add your scrollable element styles */
+.scrollable-element {
+  overflow-y: scroll; /* add scroll functionality */
+  /* additional styles as needed */
+}
