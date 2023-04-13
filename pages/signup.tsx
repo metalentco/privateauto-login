@@ -61,6 +61,11 @@ const Signup = () => {
       }
     }
   };
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      create();
+    }
+  };
 
   return (
     <div className="w-full bg-[#fff]">
@@ -90,6 +95,7 @@ const Signup = () => {
                 }
                 setEmail(e.target.value);
               }}
+              onKeyDown={handleKeyDown}
             />
             {isEmailError ? (
               email != "" ? (
@@ -119,6 +125,7 @@ const Signup = () => {
                 }
                 setFirstname(e.target.value);
               }}
+              onKeyDown={handleKeyDown}
             />
             {isFirstnameError && (
               <div className="text-xs text-left text-[#ed0a0a] pt-2">
@@ -140,6 +147,7 @@ const Signup = () => {
                 }
                 setLastname(e.target.value);
               }}
+              onKeyDown={handleKeyDown}
             />
             {isLastnameError && (
               <div className="text-xs text-left text-[#ed0a0a] pt-2">
@@ -156,6 +164,7 @@ const Signup = () => {
               onChange={(e: any) => {
                 setPassword(e.target.value);
               }}
+              onKeyDown={handleKeyDown}
             />
             <StrongPassword password={password} />
             {showPassword ? (

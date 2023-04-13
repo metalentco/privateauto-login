@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useRouter } from "next/router";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
@@ -11,7 +10,6 @@ import { checkEmail } from "@/libs/utils";
 import { signIn } from "@/libs/cognito";
 
 const Home = () => {
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState<Boolean>(false);
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -48,6 +46,12 @@ const Home = () => {
         setIsLoading(false);
         console.log(err.message);
       }
+    }
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      submit();
     }
   };
 
@@ -90,6 +94,7 @@ const Home = () => {
                   }
                   setEmail(e.target.value);
                 }}
+                onKeyDown={handleKeyDown}
               />
               {isEmailError ? (
                 email != "" ? (
@@ -119,6 +124,7 @@ const Home = () => {
                   }
                   setPassword(e.target.value);
                 }}
+                onKeyDown={handleKeyDown}
               />
               {isPasswordError && (
                 <div className="text-xs text-left text-[#ed0a0a] pt-2">

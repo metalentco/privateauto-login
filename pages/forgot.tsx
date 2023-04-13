@@ -42,6 +42,12 @@ const Forgot = () => {
     }
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      resetPassword();
+    }
+  };
+
   return (
     <div className="w-full bg-[#fff]">
       <Header />
@@ -73,6 +79,7 @@ const Forgot = () => {
                   setIsBtnEnabled(false);
                 }
               }}
+              onKeyDown={handleKeyDown}
             />
           </div>
           <div className="py-2">
