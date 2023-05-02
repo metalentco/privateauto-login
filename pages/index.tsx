@@ -25,14 +25,18 @@ const Home = () => {
       try {
         setIsLoading(true);
         await signIn(email, password);
-        window.parent.postMessage(
-          {
-            formSubmitted: true,
-            formName: "signin",
-            redirectURL: process.env.NEXT_PUBLIC_REDIRECT_URL,
-          },
-          "*"
-        );
+        if(window.parent) {
+          window.parent.postMessage(
+            {
+              formSubmitted: true,
+              formName: "signin",
+              redirectURL: process.env.NEXT_PUBLIC_REDIRECT_URL,
+            },
+            "*"
+          );
+        } else {
+          console.log('No parent');
+        }
         setIsLoading(false);
       } catch (err: any) {
         window.parent.postMessage(
