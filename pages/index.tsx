@@ -26,6 +26,7 @@ const Home = () => {
         setIsLoading(true);
         await signIn(email, password);
         if(window.parent) {
+          console.log("Found paremt. ", window.parent);
           window.parent.postMessage(
             {
               formSubmitted: true,
