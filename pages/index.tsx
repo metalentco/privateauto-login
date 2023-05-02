@@ -27,19 +27,14 @@ const Home = () => {
       try {
         setIsLoading(true);
         await signIn(email, password);
-
-        if (window.top != window.self) {
-          window.parent.postMessage(
-            {
-              formSubmitted: true,
-              formName: "signin",
-              redirectURL: process.env.NEXT_PUBLIC_REDIRECT_URL,
-            },
-            "*"
-          );
-        } else if(process.env.NEXT_PUBLIC_REDIRECT_URL) {
-          window.location.href = process.env.NEXT_PUBLIC_REDIRECT_URL;
-        }
+        window.parent.postMessage(
+          {
+            formSubmitted: true,
+            formName: "signin",
+            redirectURL: process.env.NEXT_PUBLIC_REDIRECT_URL,
+          },
+          "*"
+        );
         setIsLoading(false);
       } catch (err: any) {
         window.parent.postMessage(
@@ -73,9 +68,8 @@ const Home = () => {
       <div className="w-full bg-[#fff]">
         <Header />
         <div
-          className={`w-full flex justify-center py-8 ${
-            isLoading && "opacity-40"
-          }`}
+          className={`w-full flex justify-center py-8 ${isLoading && "opacity-40"
+            }`}
         >
           <div className="w-4/5 sm:w-[60%]">
             <div className="text-[2rem] text-[#212529] font-bold">Sign in</div>
