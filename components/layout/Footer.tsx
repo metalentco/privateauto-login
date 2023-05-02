@@ -1,5 +1,7 @@
 import Image from "next/image";
 
+const basePath = process.env.BASEPATH || '';
+
 const Footer = () => {
   return (
     <div className="w-full">
@@ -8,16 +10,16 @@ const Footer = () => {
         <Image
           width={87}
           height={16}
-          src="/assets/coming-soon.svg"
+          src={`${basePath}/assets/coming-soon.svg`}
           alt="logo"
         />
       </div>
-      <div className="bg-[url('/assets/login-mask.svg')] bg-cover bg-no-repeat flex justify-between py-2 px-4">
+      <div className="bg-[url('/external-auth/assets/login-mask.svg')] bg-cover bg-no-repeat flex justify-between py-2 px-4">
         <button>
           <Image
             width={24}
             height={24}
-            src="/assets/logo-facebook.svg"
+            src={`${basePath}/assets/logo-facebook.svg`}
             alt="facebook"
           />
         </button>
@@ -25,7 +27,7 @@ const Footer = () => {
           <Image
             width={24}
             height={24}
-            src="/assets/logo-google.svg"
+            src={`${basePath}/assets/logo-google.svg`}
             alt="google"
           />
         </button>
@@ -33,7 +35,7 @@ const Footer = () => {
           <Image
             width={24}
             height={24}
-            src="/assets/logo-apple.svg"
+            src={`${basePath}/assets/logo-apple.svg`}
             alt="apple"
           />
         </button>
@@ -41,7 +43,7 @@ const Footer = () => {
           <Image
             width={24}
             height={24}
-            src="/assets/logo-amazon.svg"
+            src={`${basePath}/assets/logo-amazon.svg`}
             alt="amazon"
           />
         </button>
