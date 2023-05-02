@@ -27,8 +27,8 @@ const Home = () => {
       try {
         setIsLoading(true);
         await signIn(email, password);
-        if(window.parent) {
-          console.log("Found paremt. ", window.parent);
+
+        if (window.top != window.self) {
           window.parent.postMessage(
             {
               formSubmitted: true,
@@ -37,8 +37,8 @@ const Home = () => {
             },
             "*"
           );
-        } else {
-          console.log('No parent');
+        } else if(process.env.NEXT_PUBLIC_REDIRECT_URL) {
+          window.location.href = process.env.NEXT_PUBLIC_REDIRECT_URL;
         }
         setIsLoading(false);
       } catch (err: any) {
