@@ -15,6 +15,8 @@ const poolData = {
 
 const userPool = new CognitoUserPool(poolData);
 
+let currentUser: any = userPool.getCurrentUser();
+
 export function signUp(email: any, password: any) {
   const attributeList: any = [
     new CognitoUserAttribute({
@@ -113,4 +115,10 @@ export async function ResetPassword(email: any, password: any, code: any) {
   }).catch((err) => {
     throw err;
   });
+}
+
+export function signOut() {
+  if(currentUser) {
+    currentUser.signOut();
+  }
 }
