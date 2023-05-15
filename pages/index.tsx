@@ -24,12 +24,13 @@ const Home = () => {
     if (email != "" && checkEmail(email) && password != "") {
       try {
         setIsLoading(true);
-        await signIn(email, password);
+        const response: any = await signIn(email, password);
         window.parent.postMessage(
           {
             formSubmitted: true,
             formName: "signin",
             redirectURL: process.env.NEXT_PUBLIC_REDIRECT_URL,
+            token: response?.accessToken.jwtToken,
           },
           "*"
         );
