@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import NextCors from "nextjs-cors";
 import { CognitoIdentityServiceProvider } from "aws-sdk";
 const cognitoIdentityServiceProvider = new CognitoIdentityServiceProvider({
   region: "us-east-1",
@@ -8,6 +9,12 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<any>
 ) {
+  await NextCors(req, res, {
+    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+    origin: "*",
+    optionsSuccessStatus: 200,
+  });
+
   try {
     if (req.method != "POST") {
       return res

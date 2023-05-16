@@ -25,7 +25,6 @@ const Home = () => {
       try {
         setIsLoading(true);
         const response: any = await signIn(email, password);
-        console.log("response:", response?.accessToken);
         window.parent.postMessage(
           {
             formSubmitted: true,
