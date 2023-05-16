@@ -11,7 +11,6 @@ const Logout = () => {
         {
           formSubmitted: true,
           formName: "logout",
-          redirectURL: process.env.NEXT_PUBLIC_LOGOUT_REDIRECT_URL || "",
         },
         "*"
       );
