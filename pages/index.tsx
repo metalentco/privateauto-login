@@ -29,7 +29,6 @@ const Home = () => {
           {
             formSubmitted: true,
             formName: "signin",
-            redirectURL: process.env.NEXT_PUBLIC_REDIRECT_URL,
             token: response?.accessToken.jwtToken,
           },
           "*"
