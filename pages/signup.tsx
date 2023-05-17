@@ -50,7 +50,6 @@ const Signup = () => {
           "*"
         );
         setIsLoading(false);
-        router.push("/");
       } catch (err: any) {
         window.parent.postMessage(
           { formSubmitted: false, formName: "signup", error: err.message },
