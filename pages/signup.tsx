@@ -16,6 +16,9 @@ import {
 
 import { signUp } from "@/libs/cognito";
 
+const basePath = process.env.BASEPATH || '';
+
+
 const Signup = () => {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState<Boolean>(false);
@@ -171,7 +174,7 @@ const Signup = () => {
                 className="absolute top-5 right-2"
                 width={17}
                 height={15}
-                src="/assets/eyeCrossedOut.svg"
+                src={`${basePath}/assets/eyeCrossedOut.svg`}
                 alt="eye"
                 onClick={() => setShowPassword(!showPassword)}
               />
@@ -180,7 +183,7 @@ const Signup = () => {
                 className="absolute top-6 right-2"
                 width={15}
                 height={11}
-                src="/assets/eye.svg"
+                src={`${basePath}/assets/eye.svg`}
                 alt="eye"
                 onClick={() => setShowPassword(!showPassword)}
               />

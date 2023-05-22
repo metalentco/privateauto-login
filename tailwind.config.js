@@ -13,9 +13,9 @@ module.exports = {
     },
     extend: {
       backgroundImage: {
-        "logo-mask": "url('/assets/login-mask.svg')",
-        eye: "url('/assets/eye.svg')",
-        eyeCrossedOut: "url('/assets/eyeCrossedOut.svg')",
+        "logo-mask": "url('/external-auth/assets/login-mask.svg')",
+        eye: "url('/external-auth/assets/eye.svg')",
+        eyeCrossedOut: "url('/external-auth/assets/eyeCrossedOut.svg')",
       },
     },
   },

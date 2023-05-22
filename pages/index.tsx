@@ -7,7 +7,44 @@ import Footer from "@/components/layout/Footer";
 import Loading from "@/components/Loading";
 import { checkEmail } from "@/libs/utils";
 
-import { signIn } from "@/libs/cognito";
+// import { signIn } from "@/libs/cognito";
+import { Amplify, Auth } from 'aws-amplify';
+
+
+const region = process.env.AWS_REGION || 'us-east-2';
+const userPoolId = process.env.NEXT_PUBLIC_USERPOOL_ID;
+const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
+const appDomain = process.env.NEXT_PUBLIC_AUTH_APP_DOMAIN || 'app.padev.xyz'
+const redirectUrl = process.env.NEXT_PUBLIC_REDIRECT_URL
+
+console.log(`appDomain: ${appDomain}`);
+
+Amplify.configure({
+  aws_project_region: region,
+  // aws_cognito_identity_pool_id: appConfig.amplifyIdentityPoolId,
+  aws_cognito_region: region,
+  aws_user_pools_id: userPoolId,
+  aws_user_pools_web_client_id: clientId,
+  Auth: {
+    // identityPoolId: appConfig.amplifyIdentityPoolId,
+    // identityPoolRegion: region,
+    region: region,
+    userPoolId: userPoolId,
+    userPoolWebClientId: clientId,
+    cookieStorage: {
+      domain: appDomain,
+      path: '/',
+      expires: 365,
+      sameSite: 'lax',
+      secure: appDomain !== 'localhost',
+    },
+  },
+});
+
+
+
+
+const basePath = process.env.BASEPATH || '';
 
 const Home = () => {
   const [showPassword, setShowPassword] = useState<Boolean>(false);
@@ -24,16 +61,11 @@ const Home = () => {
     if (email != "" && checkEmail(email) && password != "") {
       try {
         setIsLoading(true);
-        const response: any = await signIn(email, password);
-        window.parent.postMessage(
-          {
-            formSubmitted: true,
-            formName: "signin",
-            redirectURL: process.env.NEXT_PUBLIC_REDIRECT_URL,
-            token: response?.accessToken.jwtToken,
-          },
-          "*"
-        );
+        const response: any = await Auth.signIn(email, password);
+        console.log('login succeeded...notifying parent');
+        if (window.top && redirectUrl)
+          window.top.location.href = redirectUrl;
+        window.close();
         setIsLoading(false);
       } catch (err: any) {
         window.parent.postMessage(
@@ -67,9 +99,8 @@ const Home = () => {
       <div className="w-full bg-[#fff]">
         <Header />
         <div
-          className={`w-full flex justify-center py-8 ${
-            isLoading && "opacity-40"
-          }`}
+          className={`w-full flex justify-center py-8 ${isLoading && "opacity-40"
+            }`}
         >
           <div className="w-4/5 sm:w-[60%]">
             <div className="text-[2rem] text-[#212529] font-bold">Sign in</div>
@@ -137,7 +168,7 @@ const Home = () => {
                   className="absolute top-5 right-2"
                   width={17}
                   height={15}
-                  src="/assets/eyeCrossedOut.svg"
+                  src={`${basePath}/assets/eyeCrossedOut.svg`}
                   alt="eye"
                   onClick={() => setShowPassword(!showPassword)}
                 />
@@ -146,7 +177,7 @@ const Home = () => {
                   className="absolute top-6 right-2"
                   width={15}
                   height={11}
-                  src="/assets/eye.svg"
+                  src={`${basePath}/assets/eye.svg`}
                   alt="eye"
                   onClick={() => setShowPassword(!showPassword)}
                 />

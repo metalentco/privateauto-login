@@ -7,6 +7,8 @@ import {
   checkEmail,
 } from "@/libs/utils";
 
+const basePath = process.env.BASEPATH || '';
+
 type Props = {
   password: string;
 };
@@ -22,7 +24,7 @@ const StrongPassword = ({ password }: Props) => {
           <Image
             width={16}
             height={16}
-            src="/assets/strong-password.svg"
+            src={`${basePath}/assets/strong-password.svg`}
             alt="valid"
           />
           <p className="text-base text-[#212529] font-medium py-2">
@@ -37,14 +39,14 @@ const StrongPassword = ({ password }: Props) => {
                 <Image
                   width={16}
                   height={16}
-                  src="/assets/valid.svg"
+                  src={`${basePath}/assets/valid.svg`}
                   alt="valid"
                 />
               ) : (
                 <Image
                   width={16}
                   height={16}
-                  src="/assets/not-valid.svg"
+                  src={`${basePath}/assets/not-valid.svg`}
                   alt="not-valid"
                 />
               )}
@@ -63,14 +65,14 @@ const StrongPassword = ({ password }: Props) => {
                 <Image
                   width={16}
                   height={16}
-                  src="/assets/valid.svg"
+                  src={`${basePath}/assets/valid.svg`}
                   alt="valid"
                 />
               ) : (
                 <Image
                   width={16}
                   height={16}
-                  src="/assets/not-valid.svg"
+                  src={`${basePath}/assets/not-valid.svg`}
                   alt="not-valid"
                 />
               )}
@@ -89,14 +91,14 @@ const StrongPassword = ({ password }: Props) => {
                 <Image
                   width={16}
                   height={16}
-                  src="/assets/valid.svg"
+                  src={`${basePath}/assets/valid.svg`}
                   alt="valid"
                 />
               ) : (
                 <Image
                   width={16}
                   height={16}
-                  src="/assets/not-valid.svg"
+                  src={`${basePath}/assets/not-valid.svg`}
                   alt="not-valid"
                 />
               )}
@@ -115,14 +117,14 @@ const StrongPassword = ({ password }: Props) => {
                 <Image
                   width={16}
                   height={16}
-                  src="/assets/valid.svg"
+                  src={`${basePath}/assets/valid.svg`}
                   alt="valid"
                 />
               ) : (
                 <Image
                   width={16}
                   height={16}
-                  src="/assets/not-valid.svg"
+                  src={`${basePath}/assets/not-valid.svg`}
                   alt="not-valid"
                 />
               )}
