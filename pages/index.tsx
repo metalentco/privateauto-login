@@ -9,6 +9,8 @@ import { checkEmail } from "@/libs/utils";
 
 import { signIn } from "@/libs/cognito";
 
+const basePath = process.env.BASEPATH || '';
+
 const Home = () => {
   const [showPassword, setShowPassword] = useState<Boolean>(false);
   const [email, setEmail] = useState<string>("");
@@ -67,9 +69,8 @@ const Home = () => {
       <div className="w-full bg-[#fff]">
         <Header />
         <div
-          className={`w-full flex justify-center py-8 ${
-            isLoading && "opacity-40"
-          }`}
+          className={`w-full flex justify-center py-8 ${isLoading && "opacity-40"
+            }`}
         >
           <div className="w-4/5 sm:w-[60%]">
             <div className="text-[2rem] text-[#212529] font-bold">Sign in</div>
@@ -137,7 +138,7 @@ const Home = () => {
                   className="absolute top-5 right-2"
                   width={17}
                   height={15}
-                  src="/assets/eyeCrossedOut.svg"
+                  src={`${basePath}/assets/eyeCrossedOut.svg`}
                   alt="eye"
                   onClick={() => setShowPassword(!showPassword)}
                 />
@@ -146,7 +147,7 @@ const Home = () => {
                   className="absolute top-6 right-2"
                   width={15}
                   height={11}
-                  src="/assets/eye.svg"
+                  src={`${basePath}/assets/eye.svg`}
                   alt="eye"
                   onClick={() => setShowPassword(!showPassword)}
                 />

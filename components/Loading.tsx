@@ -1,5 +1,7 @@
 import Image from "next/image";
 
+const basePath = process.env.BASEPATH || '';
+
 const Loading = () => {
   return (
     <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center">
@@ -7,7 +9,7 @@ const Loading = () => {
         width={640}
         height={600}
         className="w-[300px]"
-        src="/assets/loading.gif"
+        src={`${basePath}/assets/loading.gif`}
         alt="loading"
       />
     </div>
