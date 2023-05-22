@@ -14,8 +14,10 @@ import { Amplify, Auth } from 'aws-amplify';
 const region = process.env.AWS_REGION || 'us-east-2';
 const userPoolId = process.env.NEXT_PUBLIC_USERPOOL_ID;
 const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
-const appDomain = process.env.NEXT_AUTH_APP_DOMAIN || 'app.padev.xyz'
+const appDomain = process.env.NEXT_PUBLIC_AUTH_APP_DOMAIN || 'app.padev.xyz'
 const redirectUrl = process.env.NEXT_PUBLIC_REDIRECT_URL
+
+console.log(`appDomain: ${appDomain}`);
 
 Amplify.configure({
   aws_project_region: region,
@@ -63,6 +65,7 @@ const Home = () => {
         console.log('login succeeded...notifying parent');
         if (window.top && redirectUrl)
           window.top.location.href = redirectUrl;
+        window.close();
         setIsLoading(false);
       } catch (err: any) {
         window.parent.postMessage(
