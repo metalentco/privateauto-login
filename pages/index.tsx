@@ -15,6 +15,7 @@ const region = process.env.AWS_REGION || 'us-east-2';
 const userPoolId = process.env.NEXT_PUBLIC_USERPOOL_ID;
 const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
 const appDomain = process.env.NEXT_AUTH_APP_DOMAIN || 'app.padev.xyz'
+const redirectUrl = process.env.NEXT_PUBLIC_REDIRECT_URL
 
 Amplify.configure({
   aws_project_region: region,
@@ -58,19 +59,10 @@ const Home = () => {
     if (email != "" && checkEmail(email) && password != "") {
       try {
         setIsLoading(true);
-        const response: any = await signIn(email, password);
+        const response: any = await Auth.signIn(email, password);
         console.log('login succeeded...notifying parent');
-        window.parent.postMessage(
-          {
-            formSubmitted: true,
-            formName: "signin",
-            redirectURL: process.env.NEXT_PUBLIC_REDIRECT_URL,
-            token: response?.accessToken.jwtToken,
-          },
-          "*"
-        );
-        if (window.top && process.env.NEXT_PUBLIC_REDIRECT_URL)
-          window.top.location.href = process.env.NEXT_PUBLIC_REDIRECT_URL;
+        if (window.top && redirectUrl)
+          window.top.location.href = redirectUrl;
         setIsLoading(false);
       } catch (err: any) {
         window.parent.postMessage(
