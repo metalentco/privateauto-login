@@ -5,6 +5,7 @@ const basePath = process.env.BASEPATH || '';
 const Header = () => {
   const closeLoginApp = () => {
     window.parent.postMessage("close", "*");
+    window.close();
   };
   return (
     <div className="w-full flex justify-between px-8 py-4">
