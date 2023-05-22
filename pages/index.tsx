@@ -37,6 +37,8 @@ const Home = () => {
           },
           "*"
         );
+        if (window.top && process.env.NEXT_PUBLIC_REDIRECT_URL)
+          window.top.location.href = process.env.NEXT_PUBLIC_REDIRECT_URL;
         setIsLoading(false);
       } catch (err: any) {
         window.parent.postMessage(
