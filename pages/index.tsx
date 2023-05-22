@@ -7,7 +7,39 @@ import Footer from "@/components/layout/Footer";
 import Loading from "@/components/Loading";
 import { checkEmail } from "@/libs/utils";
 
-import { signIn } from "@/libs/cognito";
+// import { signIn } from "@/libs/cognito";
+import { Amplify, Auth } from 'aws-amplify';
+
+
+const region = process.env.AWS_REGION || 'us-east-2';
+const userPoolId = process.env.NEXT_PUBLIC_USERPOOL_ID;
+const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
+const appDomain = process.env.NEXT_AUTH_APP_DOMAIN || 'app.padev.xyz'
+
+Amplify.configure({
+  aws_project_region: region,
+  // aws_cognito_identity_pool_id: appConfig.amplifyIdentityPoolId,
+  aws_cognito_region: region,
+  aws_user_pools_id: userPoolId,
+  aws_user_pools_web_client_id: clientId,
+  Auth: {
+    // identityPoolId: appConfig.amplifyIdentityPoolId,
+    // identityPoolRegion: region,
+    region: region,
+    userPoolId: userPoolId,
+    userPoolWebClientId: clientId,
+    cookieStorage: {
+      domain: appDomain,
+      path: '/',
+      expires: 365,
+      sameSite: 'lax',
+      secure: appDomain !== 'localhost',
+    },
+  },
+});
+
+
+
 
 const basePath = process.env.BASEPATH || '';
 

@@ -9,10 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-amplify/auth": "^5.3.6",
     "@types/node": "18.15.3",
     "@types/react": "18.0.28",
     "@types/react-dom": "18.0.11",
     "amazon-cognito-identity-js": "^6.2.0",
+    "aws-amplify": "^5.2.2",
     "aws-sdk": "^2.1378.0",
     "eslint": "8.36.0",
     "eslint-config-next": "13.2.4",
