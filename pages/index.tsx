@@ -26,12 +26,13 @@ const Home = () => {
     if (email != "" && checkEmail(email) && password != "") {
       try {
         setIsLoading(true);
-        await signIn(email, password);
+        const response: any = await signIn(email, password);
         window.parent.postMessage(
           {
             formSubmitted: true,
             formName: "signin",
             redirectURL: process.env.NEXT_PUBLIC_REDIRECT_URL,
+            token: response?.accessToken.jwtToken,
           },
           "*"
         );
@@ -154,7 +155,7 @@ const Home = () => {
             </div>
             <div className="py-2">
               <button
-                className="w-full bg-[#17a2b8] hover:bg-[#138496] focus:bg-[#138496] text-white text-base font-bold py-2 px-4 border-[#117a8b] rounded cursor-pointer"
+                className="w-full bg-[#00b3de] hover:opacity-80 text-[#fff] text-base font-bold py-3 px-4 border border-[#00a0c7] rounded cursor-pointer"
                 onClick={() => submit()}
               >
                 Login

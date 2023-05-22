@@ -15,7 +15,7 @@ const poolData = {
 
 const userPool = new CognitoUserPool(poolData);
 
-let currentUser: any = userPool.getCurrentUser();
+const currentUser: any = userPool.getCurrentUser();
 
 export function signUp(email: any, password: any) {
   const attributeList: any = [
@@ -104,6 +104,11 @@ export async function ResetPassword(email: any, password: any, code: any) {
   const cognitoUser = new CognitoUser(userData);
 
   return new Promise(function (resolve: any, reject: any) {
+    if (!cognitoUser) {
+      reject(`Could not find ${email}`);
+      return;
+    }
+
     cognitoUser.confirmPassword(code, password, {
       onSuccess: function (res: any) {
         resolve(res);
@@ -118,7 +123,7 @@ export async function ResetPassword(email: any, password: any, code: any) {
 }
 
 export function signOut() {
-  if(currentUser) {
+  if (currentUser) {
     currentUser.signOut();
   }
 }
