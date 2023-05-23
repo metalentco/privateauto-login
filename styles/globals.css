@@ -2,20 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: "Proxima Nova";
-  src: url("/fonts/ProximaNova-Bold.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "Proxima Nova";
-  src: url("/fonts/ProximaNova-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-}
-
 * {
   font-family: "Proxima Nova";
   box-sizing: border-box;
