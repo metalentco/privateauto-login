@@ -22,23 +22,6 @@ const Home = () => {
   const [isEmailError, setIsEmailError] = useState<Boolean>(false);
   const [isPasswordError, setIsPasswordError] = useState<Boolean>(false);
   const [isLoading, setIsLoading] = useState<Boolean>(false);
-  const [action, setAction] = useState<Action>(Action.OPEN);
-
-  useEffect(() => {
-    initConfig(window).then((cfg: any) => {
-      redirectUrl = process.env.NEXT_PUBLIC_REDIRECT_URL || cfg.appUrl;
-    });
-  }, []);
-
-  useEffect(() => {
-    if (action === Action.LOGIN) {
-      if (window?.top && redirectUrl)
-        window.top.location.href = redirectUrl;
-      window.close();
-    } else if (action === Action.CLOSE && window) {
-      window.close();
-    }
-  }, [action]);
 
   const submit = async () => {
     setIsEmailError(email == "" || !checkEmail(email));
