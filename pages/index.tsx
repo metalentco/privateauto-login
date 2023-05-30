@@ -22,6 +22,20 @@ const Home = () => {
   const [isEmailError, setIsEmailError] = useState<Boolean>(false);
   const [isPasswordError, setIsPasswordError] = useState<Boolean>(false);
   const [isLoading, setIsLoading] = useState<Boolean>(false);
+  const [action, setAction] = useState<Action>(Action.OPEN);
+
+  useEffect(() => {
+    initConfig(window).then((cfg: any) => { redirectUrl = process.env.NEXT_PUBLIC_REDIRECT_URL || cfg.appUrl });
+  }, []);
+
+  useEffect(() => {
+    if (action === Action.CLOSE) {
+      window.close();
+    } else if (action === Action.LOGIN && window?.location) {
+      window.location.replace(redirectUrl);
+    }
+
+  }, [action]);
 
   const submit = async () => {
     setIsEmailError(email == "" || !checkEmail(email));
