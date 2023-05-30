@@ -41,7 +41,13 @@ Amplify.configure({
   },
 });
 
-
+async function isLoggedIn(): Promise<boolean> {
+  return Auth.currentAuthenticatedUser({
+    bypassCache: false
+  })
+    .then(() => true)
+    .catch(() => false);
+}
 
 
 const basePath = process.env.BASEPATH || '';
@@ -54,6 +60,12 @@ const Home = () => {
   const [isPasswordError, setIsPasswordError] = useState<Boolean>(false);
   const [isLoading, setIsLoading] = useState<Boolean>(false);
 
+  isLoggedIn().then((li) => {
+    if (window.top && redirectUrl)
+      window.top.location.href = redirectUrl;
+    window.close();
+  });
+
   const submit = async () => {
     setIsEmailError(email == "" || !checkEmail(email));
     setIsPasswordError(password == "");
@@ -62,7 +74,6 @@ const Home = () => {
       try {
         setIsLoading(true);
         const response: any = await Auth.signIn(email, password);
-        console.log('login succeeded...notifying parent');
         if (window.top && redirectUrl)
           window.top.location.href = redirectUrl;
         window.close();
