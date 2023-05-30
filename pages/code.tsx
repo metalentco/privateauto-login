@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,6 +17,9 @@ import { ResetPassword } from "@/libs/cognito";
 
 const basePath = process.env.BASEPATH || '';
 
+enum Action { OPEN, CLOSE, RESET, FAIL };
+
+
 const Code = () => {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState<Boolean>(false);
@@ -24,27 +27,41 @@ const Code = () => {
   const [password, setPassword] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [isLoading, setIsLoading] = useState<Boolean>(false);
+  const [action, setAction] = useState<Action>(Action.OPEN);
+  const [lastError, setLastError] = useState<string>('');
+
+
+  useEffect(() => {
+    if (action === Action.RESET) {
+      window?.parent && window.parent.postMessage(
+        { formSubmitted: true, formName: "resetPassword" },
+        "*"
+      );
+    } else if (action === Action.FAIL && window) {
+      window?.parent && window.parent.postMessage(
+        {
+          formSubmitted: false,
+          formName: "resetPassword",
+          error: lastError,
+        },
+        "*"
+      );
+    } else if (action === Action.CLOSE && window) {
+      window.close();
+    }
+  }, [action, lastError]);
 
   const resetPassword = async () => {
     try {
       setIsLoading(true);
       await ResetPassword(email, password, code);
-      window.parent.postMessage(
-        { formSubmitted: true, formName: "resetPassword" },
-        "*"
-      );
+      setAction(Action.RESET);
       setIsLoading(false);
       router.push("/");
     } catch (err) {
       if (err instanceof Error) {
-        window.parent.postMessage(
-          {
-            formSubmitted: false,
-            formName: "resetPassword",
-            error: err.message,
-          },
-          "*"
-        );
+        setLastError(err.message);
+        setAction(Action.FAIL);
         setIsLoading(false);
         console.log(err.message);
       }
@@ -57,9 +74,13 @@ const Code = () => {
     }
   };
 
+  function closeApp() {
+    setAction(Action.CLOSE);
+  }
+
   return (
     <div className="w-full bg-[#fff]">
-      <Header />
+      <Header closeLoginApp={closeApp} />
       <div className="w-full flex justify-center py-8">
         <div className={`w-4/5 sm:w-[60%] ${isLoading && "opacity-40"}`}>
           <div className="text-[2rem] text-[#212529] font-bold">
@@ -130,8 +151,7 @@ const Code = () => {
           </div>
           <div className="py-6">
             <button
-              className={`w-full bg-[#17a2b8] text-white text-base font-bold py-2 px-4 border-[#117a8b] rounded ${
-                email != "" &&
+              className={`w-full bg-[#17a2b8] text-white text-base font-bold py-2 px-4 border-[#117a8b] rounded ${email != "" &&
                 checkEmail(email) &&
                 code != "" &&
                 password != "" &&
@@ -139,9 +159,9 @@ const Code = () => {
                 checkSpecialCharacter(password) &&
                 checkUpperLower(password) &&
                 checkNumber(password)
-                  ? "opacity-100"
-                  : "opacity-50"
-              }`}
+                ? "opacity-100"
+                : "opacity-50"
+                }`}
               onClick={() => resetPassword()}
               disabled={
                 !(

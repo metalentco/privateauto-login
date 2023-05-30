@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
@@ -6,45 +6,14 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Loading from "@/components/Loading";
 import { checkEmail } from "@/libs/utils";
-
-// import { signIn } from "@/libs/cognito";
-import { Amplify, Auth } from 'aws-amplify';
-
-
-const region = process.env.AWS_REGION || 'us-east-2';
-const userPoolId = process.env.NEXT_PUBLIC_USERPOOL_ID;
-const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
-const appDomain = process.env.NEXT_PUBLIC_AUTH_APP_DOMAIN || 'app.padev.xyz'
-const redirectUrl = process.env.NEXT_PUBLIC_REDIRECT_URL
-
-console.log(`appDomain: ${appDomain}`);
-
-Amplify.configure({
-  aws_project_region: region,
-  // aws_cognito_identity_pool_id: appConfig.amplifyIdentityPoolId,
-  aws_cognito_region: region,
-  aws_user_pools_id: userPoolId,
-  aws_user_pools_web_client_id: clientId,
-  Auth: {
-    // identityPoolId: appConfig.amplifyIdentityPoolId,
-    // identityPoolRegion: region,
-    region: region,
-    userPoolId: userPoolId,
-    userPoolWebClientId: clientId,
-    cookieStorage: {
-      domain: appDomain,
-      path: '/',
-      expires: 365,
-      sameSite: 'lax',
-      secure: appDomain !== 'localhost',
-    },
-  },
-});
-
-
-
+import { Auth } from 'aws-amplify';
+import { initConfig } from "@/libs/cognito";
 
 const basePath = process.env.BASEPATH || '';
+let redirectUrl: string;
+
+
+enum Action { OPEN, CLOSE, LOGIN };
 
 const Home = () => {
   const [showPassword, setShowPassword] = useState<Boolean>(false);
@@ -53,40 +22,51 @@ const Home = () => {
   const [isEmailError, setIsEmailError] = useState<Boolean>(false);
   const [isPasswordError, setIsPasswordError] = useState<Boolean>(false);
   const [isLoading, setIsLoading] = useState<Boolean>(false);
+  const [action, setAction] = useState<Action>(Action.OPEN);
+
+  useEffect(() => {
+    initConfig(window).then((cfg: any) => {
+      redirectUrl = process.env.NEXT_PUBLIC_REDIRECT_URL || cfg.appUrl;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (action === Action.LOGIN) {
+      if (window?.top && redirectUrl)
+        window.top.location.href = redirectUrl;
+      window.close();
+    } else if (action === Action.CLOSE && window) {
+      window.close();
+    }
+  }, [action]);
 
   const submit = async () => {
     setIsEmailError(email == "" || !checkEmail(email));
     setIsPasswordError(password == "");
 
     if (email != "" && checkEmail(email) && password != "") {
-      try {
-        setIsLoading(true);
-        const response: any = await Auth.signIn(email, password);
-        console.log('login succeeded...notifying parent');
-        if (window.top && redirectUrl)
-          window.top.location.href = redirectUrl;
-        window.close();
-        setIsLoading(false);
-      } catch (err: any) {
-        window.parent.postMessage(
-          {
-            formSubmitted: false,
-            formName: "signin",
-            error: err.message,
-          },
-          "*"
-        );
-        setIsLoading(false);
-        console.log(err.message);
+      setIsLoading(true);
+      const result = await Auth.signIn(email, password);
+      if (result.ok) {
+        setAction(Action.LOGIN);
+      } else {
+        // toast message : result.message
+        console.log(result.message);
       }
     }
-  };
+    setIsLoading(false);
+  }
+
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       submit();
     }
   };
+
+  function closeApp() {
+    setAction(Action.CLOSE);
+  }
 
   return (
     <div>
@@ -97,7 +77,7 @@ const Home = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="w-full bg-[#fff]">
-        <Header />
+        <Header closeLoginApp={closeApp} />
         <div
           className={`w-full flex justify-center py-8 ${isLoading && "opacity-40"
             }`}
