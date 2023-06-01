@@ -14,15 +14,16 @@ function getParamterHash(userAgent: string, url: string, body = {}) {
   return Base64.stringify(hmacSHA256(JSON.stringify(payload), secret));
 }
 
-async function getConfig(windowRef: any): Promise<any> {
+async function getConfig(windowRef: any, api: string = ''): Promise<any> {
   const { userAgent } = windowRef.navigator;
   const base = windowRef.location?.hostname;
   const appUrl = `https://app.${base}`;
 
-  return fetch(`/api/appconfig`, {
+  return fetch(`${api}/api/appconfig`, {
     headers: {
       'X-PA': getParamterHash(userAgent, '/api/appconfig', {}),
       'x-client': userAgent,
+      'accept': 'application/json'
     },
   })
     .then((res) => res.json())
@@ -67,8 +68,10 @@ async function getConfig(windowRef: any): Promise<any> {
 let configDone = (c: any) => { };
 const config: Promise<any> = new Promise((resolve, reject) => { configDone = resolve; });
 
-export async function initConfig(windowRef: any, e: any = undefined) {
-  getConfig(windowRef).catch((e) => initConfig(e, windowRef)).then((c) => configDone(c));
+export async function initConfig(windowRef: any, api: string = '', e: any = undefined) {
+  getConfig(windowRef, api)
+    /*.catch((e) => initConfig(e, windowRef)) */
+    .then((c) => configDone(c));
 }
 
 const currentUser: any = async () => {
