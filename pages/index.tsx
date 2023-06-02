@@ -32,8 +32,11 @@ const Home = () => {
   useEffect(() => {
     if (action === Action.CLOSE) {
       window.close();
-    } else if (action === Action.LOGIN && window?.location) {
-      window.location.replace(redirectUrl);
+    } else if (action === Action.LOGIN) {
+      if (window.parent)
+        window.parent.location.replace(redirectUrl);
+      else
+        window.location.replace(redirectUrl);
     }
 
   }, [action]);

@@ -49,7 +49,10 @@ const Signup = () => {
         { formSubmitted: true, formName: "signup" },
         "*"
       );
-      window.location.replace(redirectUrl);
+      if (window.parent)
+        window.parent.location.replace(redirectUrl);
+      else
+        window.location.replace(redirectUrl);
     } else if (action === Action.FAIL && window) {
       window?.parent && window.parent.postMessage(
         { formSubmitted: false, formName: "signup", error: lastError },
