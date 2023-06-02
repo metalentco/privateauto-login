@@ -84,7 +84,7 @@ const Forgot = () => {
           </div>
           <div className="py-2">
             <button
-              className={`w-full bg-[#17a2b8] text-white text-base font-bold py-2 px-4 border-[#117a8b] rounded ${
+              className={`w-full bg-[#00b3de] text-white text-base font-bold py-2 px-4 border-[#117a8b] rounded ${
                 isBtnEnabled ? "opacity-100" : "opacity-50"
               }`}
               onClick={() => resetPassword()}
