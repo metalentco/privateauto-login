@@ -80,7 +80,6 @@ const Code = () => {
 
   return (
     <div className="w-full bg-[#fff]">
-      <Header closeLoginApp={closeApp} />
       <div className="w-full flex justify-center py-8">
         <div className={`w-4/5 sm:w-[60%] ${isLoading && "opacity-40"}`}>
           <div className="text-[2rem] text-[#212529] font-bold">

@@ -74,7 +74,7 @@ const Home = () => {
     }
   };
 
-  function closeApp() {
+  function closeApp(): any {
     setAction(Action.CLOSE);
   }
 
@@ -87,7 +87,6 @@ const Home = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="w-full bg-[#fff]">
-        <Header closeLoginApp={closeApp} />
         <div
           className={`w-full flex justify-center py-8 ${isLoading && "opacity-40"
             }`}

@@ -35,11 +35,10 @@ const Signup = () => {
   const [appOpen, setAppOpen] = useState<Boolean>(true);
   const [action, setAction] = useState<Action>(Action.OPEN);
   const [lastError, setLastError] = useState<string>('');
-
-  let redirectUrl: string = '';
+  const [redirectUrl, setRedirectUrl] = useState<string>('');
 
   useEffect(() => {
-    initConfig(window).then((cfg: any) => { redirectUrl = cfg.redirectUrl });
+    initConfig(window).then((cfg: any) => { setRedirectUrl(cfg.redirectUrl) });
   }, []);
 
 
@@ -61,7 +60,7 @@ const Signup = () => {
     } else if (action === Action.CLOSE && window) {
       window.close();
     }
-  }, [action, lastError]);
+  }, [action, lastError, redirectUrl]);
 
 
   const create = async () => {
@@ -108,7 +107,6 @@ const Signup = () => {
 
   return (
     <div className="w-full bg-[#fff]">
-      <Header closeLoginApp={closeApp} />
       <div className="w-full flex justify-center py-8">
         <div className={`w-4/5 sm:w-[60%] ${isLoading && "opacity-40"}`}>
           <div className="text-[2rem] text-[#212529] font-bold">
