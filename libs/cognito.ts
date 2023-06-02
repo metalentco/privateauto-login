@@ -147,7 +147,7 @@ async function apiCall(method: string, url: string, body: any) {
 export async function forgotPassword(email: string): Promise<Result> {
   try {
     // const resp = await Auth.forgotPassword(email);
-    const resp = await apiCall('POST', `/users//forgot-password`, { email })
+    const resp = await apiCall('POST', `/users/forgot-password`, { email })
     console.log('forgotPassword: ', resp);
     return { ok: true, message: 'Ok' };
   } catch (err: any) {
