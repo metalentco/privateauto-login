@@ -147,7 +147,7 @@ async function apiCall(method: string, url: string, body: any) {
 export async function forgotPassword(email: string): Promise<Result> {
   try {
     // const resp = await Auth.forgotPassword(email);
-    const resp = await apiCall('POST', `/forgot-password`, { email })
+    const resp = await apiCall('POST', `/users//forgot-password`, { email })
     console.log('forgotPassword: ', resp);
     return { ok: true, message: 'Ok' };
   } catch (err: any) {
@@ -158,7 +158,7 @@ export async function forgotPassword(email: string): Promise<Result> {
 export async function ResetPassword(email: any, password: any, code: any) {
   try {
     //const resp = Auth.forgotPasswordSubmit(email, code, password);
-    const resp = await apiCall('PUT', `/reset-password`, { email, code, password })
+    const resp = await apiCall('PUT', `/users/reset-password`, { email, code, password })
     console.log('ResetPassword: ', resp);
     return { ok: true, message: 'Ok' };
   } catch (err: any) {
