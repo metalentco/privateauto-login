@@ -127,14 +127,14 @@ export async function signIn(email: string, password: string): Promise<Result> {
   }
 }
 
-const WWW_AGENT = 'www-code';
 
-async function apiCall(method: string, url: string, body: any) {
-  return fetch(`/api${url.startsWith('/') ? '' : '/'}${url}`, {
+async function apiCall(userAgent: string, method: string, path: string, body: any) {
+  const url = `/api${path.startsWith('/') ? '' : '/'}${path}`
+  return fetch(url, {
     method,
     headers: {
-      'X-PA': getParamterHash(WWW_AGENT, url, {}),
-      'x-client': WWW_AGENT,
+      'X-PA': getParamterHash(userAgent, url, {}),
+      'x-client': userAgent,
       'accept': 'application/json'
     },
     body: JSON.stringify(body)
@@ -144,10 +144,10 @@ async function apiCall(method: string, url: string, body: any) {
 
 }
 
-export async function forgotPassword(email: string): Promise<Result> {
+export async function forgotPassword(windowRef: any, email: string): Promise<Result> {
   try {
     // const resp = await Auth.forgotPassword(email);
-    const resp = await apiCall('POST', `/users/forgot-password`, { email })
+    const resp = await apiCall(windowRef.userAgent, 'POST', `/users/forgot-password`, { email })
     console.log('forgotPassword: ', resp);
     return { ok: true, message: 'Ok' };
   } catch (err: any) {
@@ -155,10 +155,10 @@ export async function forgotPassword(email: string): Promise<Result> {
   }
 }
 
-export async function ResetPassword(email: any, password: any, code: any) {
+export async function ResetPassword(windowRef: any, email: any, password: any, code: any) {
   try {
     //const resp = Auth.forgotPasswordSubmit(email, code, password);
-    const resp = await apiCall('PUT', `/users/reset-password`, { email, code, password })
+    const resp = await apiCall(windowRef.userAgent, 'PUT', `/users/reset-password`, { email, code, password })
     console.log('ResetPassword: ', resp);
     return { ok: true, message: 'Ok' };
   } catch (err: any) {
