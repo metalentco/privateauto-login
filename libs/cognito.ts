@@ -133,7 +133,7 @@ async function apiCall(userAgent: string, method: string, path: string, body: an
   return fetch(url, {
     method,
     headers: {
-      'X-PA': getParamterHash(userAgent, url, {}),
+      'X-PA': getParamterHash(userAgent, url, body ?? {}),
       'x-client': userAgent,
       'accept': 'application/json'
     },
