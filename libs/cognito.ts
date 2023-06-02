@@ -14,64 +14,85 @@ function getParamterHash(userAgent: string, url: string, body = {}) {
   return Base64.stringify(hmacSHA256(JSON.stringify(payload), secret));
 }
 
-async function getConfig(windowRef: any, api: string = ''): Promise<any> {
+async function getConfig(windowRef: any): Promise<any> {
   const { userAgent } = windowRef.navigator;
   const base = windowRef.location?.hostname;
+  const appDomain = windowRef.location.hostname === 'localhost' ? 'localhost' : windowRef.location.hostname.slice(4);
   const appUrl = `https://app.${base}`;
 
-  return fetch(`${api}/api/appconfig`, {
-    headers: {
-      'X-PA': getParamterHash(userAgent, '/api/appconfig', {}),
-      'x-client': userAgent,
-      'accept': 'application/json'
+  let region = process.env.NEXT_PUBLIC_REGION;
+  let amplifyUserPoolId = process.env.NEXT_PUBLIC_USERPOOL_ID;
+  let amplifyWebClientId = process.env.NEXT_PUBLIC_CLIENT_ID;
+  let amplifyIdentityPoolId = process.env.NEXT_PUBLIC_IDPOOL_ID;
+  let redirectUrl = process.env.NEXT_PUBLIC_REDIRECT_URL;
+  let authDomain = process.env.NEXT_PUBLIC_AUTH_DOMAIN;
+  let appConfigUrl = process.env.NEXT_PUBLIC_CONFIG_URL;
+
+  if (appConfigUrl) {
+    const appConfg = await fetch(`${appConfigUrl}/api/appconfig`, {
+      headers: {
+        'X-PA': getParamterHash(userAgent, '/api/appconfig', {}),
+        'x-client': userAgent,
+        'accept': 'application/json'
+      },
+    })
+      .then((res) => res.json())
+      .then((appConfig: any) => {
+        region = appConfig.amplifyRegion;
+        amplifyIdentityPoolId = appConfig.amplifyIdentityPoolId;
+        amplifyUserPoolId = appConfig.amplifyUserPoolId;
+        amplifyWebClientId = appConfig.amplifyWebClientId;
+        authDomain = appConfig.amplifyOauthDomain;
+      });
+  }
+
+  const awsConfig = {
+    aws_project_region: region,
+    aws_cognito_identity_pool_id: amplifyIdentityPoolId,
+    aws_cognito_region: region,
+    aws_user_pools_id: amplifyUserPoolId,
+    aws_user_pools_web_client_id: amplifyWebClientId,
+    Auth: {
+      identityPoolId: amplifyIdentityPoolId,
+      region,
+      identityPoolRegion: region,
+      userPoolId: amplifyUserPoolId,
+      userPoolWebClientId: amplifyWebClientId,
+      cookieStorage: {
+        domain: appDomain,
+        path: '/',
+        expires: 365,
+        sameSite: 'lax',
+        secure: appDomain !== 'localhost',
+      },
+      oauth: {
+        domain: authDomain ?? base,
+        scope: ['email', 'profile', 'openid', 'aws.cognito.signin.user.admin'],
+        redirectSignIn: `${appUrl}/auth/login`,
+        redirectSignOut: `${appUrl}/auth/logout`,
+        responseType: 'token',
+      },
     },
-  })
-    .then((res) => res.json())
-    .then((appConfig: any) => {
-      appConfig.appUrl = appUrl;
-      appConfig.appDomain = windowRef.location.hostname === 'localhost' ? 'localhost' : windowRef.location.hostname.slice(4);
-      Amplify.configure({
-        aws_project_region: appConfig.amplifyRegion,
-        aws_cognito_identity_pool_id: appConfig.amplifyIdentityPoolId,
-        aws_cognito_region: appConfig.amplifyRegion,
-        aws_user_pools_id: appConfig.amplifyUserPoolId,
-        aws_user_pools_web_client_id: appConfig.amplifyWebClientId,
-        Auth: {
-          identityPoolId: appConfig.amplifyIdentityPoolId,
-          region: appConfig.amplifyRegion,
-          identityPoolRegion: appConfig.amplifyRegion,
-          userPoolId: appConfig.amplifyUserPoolId,
-          userPoolWebClientId: appConfig.amplifyWebClientId,
-          cookieStorage: {
-            domain: appConfig.appDomain,
-            path: '/',
-            expires: 365,
-            sameSite: 'lax',
-            secure: appConfig.appDomain !== 'localhost',
-          },
-          oauth: {
-            domain: appConfig.amplifyOauthDomain,
-            scope: ['email', 'profile', 'openid', 'aws.cognito.signin.user.admin'],
-            redirectSignIn: `${appConfig.appUrl}/auth/login`,
-            redirectSignOut: `${appConfig.appUrl}/auth/login`,
-            responseType: 'token',
-          },
-        },
-      })
-    }).then((x) => {
-      console.log(x);
-      return x;
-    });
-  ;
+  }
+
+  await Amplify.configure(awsConfig);
+
+  return {
+    appUrl,
+    appDomain,
+    redirectUrl: redirectUrl ?? appUrl
+  };
+
 }
 
 let configDone = (c: any) => { };
 const config: Promise<any> = new Promise((resolve, reject) => { configDone = resolve; });
 
-export async function initConfig(windowRef: any, api: string = '', e: any = undefined) {
-  getConfig(windowRef, api)
+export async function initConfig(windowRef: any, e: any = undefined) {
+  getConfig(windowRef)
     /*.catch((e) => initConfig(e, windowRef)) */
     .then((c) => configDone(c));
+  return config;
 }
 
 const currentUser: any = async () => {
@@ -106,21 +127,39 @@ export async function signIn(email: string, password: string): Promise<Result> {
   }
 }
 
+const WWW_AGENT = 'www-code';
+
+async function apiCall(method: string, url: string, body: any) {
+  return fetch(`/api${url.startsWith('/') ? '' : '/'}${url}`, {
+    method,
+    headers: {
+      'X-PA': getParamterHash(WWW_AGENT, url, {}),
+      'x-client': WWW_AGENT,
+      'accept': 'application/json'
+    },
+    body: JSON.stringify(body)
+  })
+    .then((res) => res.json())
+
+
+}
+
 export async function forgotPassword(email: string): Promise<Result> {
   try {
-    const resp = Auth.forgotPassword(email);
+    // const resp = await Auth.forgotPassword(email);
+    const resp = await apiCall('POST', `/forgot-password`, { email })
+    console.log('forgotPassword: ', resp);
     return { ok: true, message: 'Ok' };
   } catch (err: any) {
     return { ok: false, message: err.message };
   }
 }
 
-
-
-
 export async function ResetPassword(email: any, password: any, code: any) {
   try {
-    const resp = Auth.forgotPasswordSubmit(email, code, password);
+    //const resp = Auth.forgotPasswordSubmit(email, code, password);
+    const resp = await apiCall('PUT', `/reset-password`, { email, code, password })
+    console.log('ResetPassword: ', resp);
     return { ok: true, message: 'Ok' };
   } catch (err: any) {
     return { ok: false, message: err.message };

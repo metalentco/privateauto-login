@@ -14,7 +14,7 @@ import {
   checkEmail,
 } from "@/libs/utils";
 
-import { signUp } from "@/libs/cognito";
+import { initConfig, signUp } from "@/libs/cognito";
 
 const basePath = process.env.BASEPATH || '';
 
@@ -36,12 +36,20 @@ const Signup = () => {
   const [action, setAction] = useState<Action>(Action.OPEN);
   const [lastError, setLastError] = useState<string>('');
 
+  let redirectUrl: string = '';
+
+  useEffect(() => {
+    initConfig(window).then((cfg: any) => { redirectUrl = cfg.redirectUrl });
+  }, []);
+
+
   useEffect(() => {
     if (action === Action.SIGNUP) {
       window?.parent && window.parent.postMessage(
         { formSubmitted: true, formName: "signup" },
         "*"
       );
+      window.location.replace(redirectUrl);
     } else if (action === Action.FAIL && window) {
       window?.parent && window.parent.postMessage(
         { formSubmitted: false, formName: "signup", error: lastError },

@@ -23,9 +23,10 @@ const Home = () => {
   const [isPasswordError, setIsPasswordError] = useState<Boolean>(false);
   const [isLoading, setIsLoading] = useState<Boolean>(false);
   const [action, setAction] = useState<Action>(Action.OPEN);
+  const [errorMsg, setErrorMsg] = useState<string>();
 
   useEffect(() => {
-    initConfig(window).then((cfg: any) => { redirectUrl = process.env.NEXT_PUBLIC_REDIRECT_URL || cfg.appUrl });
+    initConfig(window).then((cfg: any) => { redirectUrl = cfg.redirectUrl });
   }, []);
 
   useEffect(() => {
@@ -43,12 +44,21 @@ const Home = () => {
 
     if (email != "" && checkEmail(email) && password != "") {
       setIsLoading(true);
-      const result = await Auth.signIn(email, password);
-      if (result.ok) {
+      try {
+        const result = await Auth.signIn(email, password);
+        console.log(result);
         setAction(Action.LOGIN);
-      } else {
-        // toast message : result.message
-        console.log(result.message);
+      } catch (e: any) {
+        switch (e.name) {
+          case 'UserNotFoundException':
+          case 'NotAuthorizedException':
+            setErrorMsg('User name or password was entered incorrectly.');
+            break;
+          default:
+            console.log(JSON.stringify(e));
+            setErrorMsg('There was a problem signing in to your account.');
+
+        }
       }
     }
     setIsLoading(false);
@@ -161,6 +171,13 @@ const Home = () => {
               )}
             </div>
             <div className="py-2">
+              {errorMsg && errorMsg != '' ? (
+                <div className="text-xs text-left text-[#ed0a0a] pt-2">
+                  {errorMsg}
+                </div>
+              ) : (
+                ""
+              )}
               <button
                 className="w-full bg-[#00b3de] hover:opacity-80 text-[#fff] text-base font-bold py-3 px-4 border border-[#00a0c7] rounded cursor-pointer"
                 onClick={() => submit()}
