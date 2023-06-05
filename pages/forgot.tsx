@@ -1,41 +1,58 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import Loading from "@/components/Loading";
 
-import { requestVerificationCode } from "@/libs/cognito";
+import { forgotPassword } from "@/libs/cognito";
+
+enum Action { OPEN, CLOSE, FORGOT, FAIL };
 
 const Forgot = () => {
   const router = useRouter();
   const [email, setEmail] = useState<string>("");
   const [isBtnEnabled, setIsBtnEnabled] = useState<Boolean>(false);
   const [isLoading, setIsLoading] = useState<Boolean>(false);
+  const [action, setAction] = useState<Action>(Action.OPEN);
+  const [lastError, setLastError] = useState<string>('');
 
   const regex = new RegExp(
     "([!#-'*+/-9=?A-Z^-~-]+(.[!#-'*+/-9=?A-Z^-~-]+)*|\"([]!#-[^-~ \t]|(\\[\t -~]))+\")@([!#-'*+/-9=?A-Z^-~-]+(.[!#-'*+/-9=?A-Z^-~-]+)*|[[\t -Z^-~]*])"
   );
 
-  const resetPassword = async () => {
-    try {
-      setIsLoading(true);
-      await requestVerificationCode(email);
-      window.parent.postMessage(
+  useEffect(() => {
+    if (action === Action.FORGOT) {
+      window?.parent && window.parent.postMessage(
         { formSubmitted: true, formName: "forgot" },
         "*"
       );
+    } else if (action === Action.FAIL && window) {
+      window?.parent && window.parent.postMessage(
+        {
+          formSubmitted: false,
+          formName: "forgot",
+          error: lastError,
+        },
+        "*"
+      );
+    } else if (action === Action.CLOSE && window) {
+      window.close();
+    }
+  }, [action, lastError]);
+
+
+
+  const resetPassword = async () => {
+    try {
+      setIsLoading(true);
+      await forgotPassword(window, email);
+      setAction(Action.FORGOT);
       setIsLoading(false);
       router.push("/code");
     } catch (err) {
       if (err instanceof Error) {
-        window.parent.postMessage(
-          {
-            formSubmitted: false,
-            formName: "forgot",
-            error: err.message,
-          },
-          "*"
-        );
+        setLastError(err.message);
+        setAction(Action.FAIL);
         setIsLoading(false);
         console.log(err.message);
       }
@@ -48,9 +65,12 @@ const Forgot = () => {
     }
   };
 
+  function closeApp() {
+    setAction(Action.CLOSE);
+  }
+
   return (
     <div className="w-full bg-[#fff]">
-      <Header />
       <div className="w-full flex justify-center py-8">
         <div className={`w-4/5 sm:w-[60%] ${isLoading && "opacity-40"}`}>
           <div className="text-[2rem] text-[#212529] font-bold">

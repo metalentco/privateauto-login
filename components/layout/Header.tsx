@@ -2,11 +2,7 @@ import Image from "next/image";
 
 const basePath = process.env.BASEPATH || '';
 
-const Header = () => {
-  const closeLoginApp = () => {
-    window.parent.postMessage("close", "*");
-    window.close();
-  };
+const Header = (closeLoginApp: any = () => { }) => {
   return (
     <div className="w-full flex justify-between px-8 py-4">
       <Image width={134} height={24} src={`${basePath}/assets/logo.svg`} alt="logo" />

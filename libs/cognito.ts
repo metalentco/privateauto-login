@@ -1,125 +1,169 @@
-import {
-  CognitoUserPool,
-  CognitoUserAttribute,
-  AuthenticationDetails,
-  CognitoUser,
-} from "amazon-cognito-identity-js";
+import hmacSHA256 from 'crypto-js/hmac-sha256';
+import Base64 from 'crypto-js/enc-base64';
+import { Amplify, Auth } from 'aws-amplify';
 
-const UserPoolId = process.env.NEXT_PUBLIC_USERPOOL_ID || "";
-const ClientId = process.env.NEXT_PUBLIC_CLIENT_ID || "";
+const secret = 'EZScretJwtKey';
 
-const poolData = {
-  UserPoolId,
-  ClientId,
-};
+interface Result {
+  readonly ok: boolean;
+  readonly message: string;
+}
 
-const userPool = new CognitoUserPool(poolData);
+function getParamterHash(userAgent: string, url: string, body = {}) {
+  const payload = { body, userAgent, url };
+  return Base64.stringify(hmacSHA256(JSON.stringify(payload), secret));
+}
 
-const currentUser: any = userPool.getCurrentUser();
+async function getConfig(windowRef: any): Promise<any> {
+  const { userAgent } = windowRef.navigator;
+  const base = windowRef.location?.hostname;
+  const appDomain = windowRef.location.hostname === 'localhost' ? 'localhost' : windowRef.location.hostname.slice(4);
+  const appUrl = `https://app.${base}`;
 
-export function signUp(email: any, password: any) {
-  const attributeList: any = [
-    new CognitoUserAttribute({
-      Name: "email",
-      Value: email,
-    }),
-  ];
+  let region = process.env.NEXT_PUBLIC_REGION;
+  let amplifyUserPoolId = process.env.NEXT_PUBLIC_USERPOOL_ID;
+  let amplifyWebClientId = process.env.NEXT_PUBLIC_CLIENT_ID;
+  let amplifyIdentityPoolId = process.env.NEXT_PUBLIC_IDPOOL_ID;
+  let redirectUrl = process.env.NEXT_PUBLIC_REDIRECT_URL;
+  let authDomain = process.env.NEXT_PUBLIC_AUTH_DOMAIN;
+  let appConfigUrl = process.env.NEXT_PUBLIC_CONFIG_URL;
 
-  return new Promise((resolve: any, reject: any) => {
-    userPool.signUp(
+  if (appConfigUrl) {
+    const appConfg = await fetch(`${appConfigUrl}/api/appconfig`, {
+      headers: {
+        'X-PA': getParamterHash(userAgent, '/api/appconfig', {}),
+        'x-client': userAgent,
+        'accept': 'application/json'
+      },
+    })
+      .then((res) => res.json())
+      .then((appConfig: any) => {
+        region = appConfig.amplifyRegion;
+        amplifyIdentityPoolId = appConfig.amplifyIdentityPoolId;
+        amplifyUserPoolId = appConfig.amplifyUserPoolId;
+        amplifyWebClientId = appConfig.amplifyWebClientId;
+        authDomain = appConfig.amplifyOauthDomain;
+      });
+  }
+
+  const awsConfig = {
+    aws_project_region: region,
+    aws_cognito_identity_pool_id: amplifyIdentityPoolId,
+    aws_cognito_region: region,
+    aws_user_pools_id: amplifyUserPoolId,
+    aws_user_pools_web_client_id: amplifyWebClientId,
+    Auth: {
+      identityPoolId: amplifyIdentityPoolId,
+      region,
+      identityPoolRegion: region,
+      userPoolId: amplifyUserPoolId,
+      userPoolWebClientId: amplifyWebClientId,
+      cookieStorage: {
+        domain: appDomain,
+        path: '/',
+        expires: 365,
+        sameSite: 'lax',
+        secure: appDomain !== 'localhost',
+      },
+      oauth: {
+        domain: authDomain ?? base,
+        scope: ['email', 'profile', 'openid', 'aws.cognito.signin.user.admin'],
+        redirectSignIn: `${appUrl}/auth/login`,
+        redirectSignOut: `${appUrl}/auth/logout`,
+        responseType: 'token',
+      },
+    },
+  }
+
+  await Amplify.configure(awsConfig);
+
+  return {
+    appUrl,
+    appDomain,
+    redirectUrl: redirectUrl ?? appUrl
+  };
+
+}
+
+let configDone = (c: any) => { };
+const config: Promise<any> = new Promise((resolve, reject) => { configDone = resolve; });
+
+export async function initConfig(windowRef: any, e: any = undefined) {
+  getConfig(windowRef)
+    /*.catch((e) => initConfig(e, windowRef)) */
+    .then((c) => configDone(c));
+  return config;
+}
+
+const currentUser: any = async () => {
+  try {
+    const resp = await Auth.currentAuthenticatedUser();
+    return { ok: true, ...resp };
+  }
+  catch (err: any) {
+    return { ok: false, message: err.message };
+  }
+}
+
+export async function signUp(email: string, password: string, family_name: string, given_name: string) {
+  await Auth.signOut();
+  return await Auth.signUp({
+    username: email,
+    password,
+    attributes: {
       email,
-      password,
-      attributeList,
-      [],
-      function (error: any, result: any) {
-        if (result) {
-          resolve(result);
-        } else {
-          reject(error);
-        }
-      }
-    );
-  }).catch((err) => {
-    throw err;
+      family_name,
+      given_name,
+    },
   });
 }
 
-export function signIn(email: any, password: any) {
-  const authenticationData = {
-    Username: email,
-    Password: password,
-  };
-
-  const authenticationDetails = new AuthenticationDetails(authenticationData);
-
-  const userData = {
-    Username: email,
-    Pool: userPool,
-  };
-
-  const cognitoUser = new CognitoUser(userData);
-
-  return new Promise((resolve: any, reject: any) => {
-    cognitoUser.authenticateUser(authenticationDetails, {
-      onSuccess: function (res: any) {
-        resolve(res);
-      },
-      onFailure: function (err: any) {
-        reject(err);
-      },
-    });
-  }).catch((err) => {
-    throw err;
-  });
+export async function signIn(email: string, password: string): Promise<Result> {
+  try {
+    await Auth.signIn(email, password);
+    return { ok: true, message: 'Ok' };
+  } catch (err: any) {
+    return { ok: false, message: err.message };
+  }
 }
 
-export async function requestVerificationCode(email: string) {
-  const userData = {
-    Username: email,
-    Pool: userPool,
-  };
 
-  const cognitoUser = new CognitoUser(userData);
+async function apiCall(userAgent: string, method: string, path: string, body: any) {
+  const url = `/api${path.startsWith('/') ? '' : '/'}${path}`
+  return fetch(url, {
+    method,
+    headers: {
+      'X-PA': getParamterHash(userAgent, url, body ?? {}),
+      'x-client': userAgent,
+      'accept': 'application/json'
+    },
+    body: JSON.stringify(body)
+  })
+    .then((res) => res.json())
 
-  return new Promise(function (resolve, reject) {
-    cognitoUser.forgotPassword({
-      onSuccess: function (res: any) {
-        resolve(res);
-      },
-      onFailure: function (err: any) {
-        reject(err);
-      },
-    });
-  }).catch((err) => {
-    throw err;
-  });
+
 }
 
-export async function ResetPassword(email: any, password: any, code: any) {
-  const userData = {
-    Username: email,
-    Pool: userPool,
-  };
+export async function forgotPassword(windowRef: any, email: string): Promise<Result> {
+  try {
+    // const resp = await Auth.forgotPassword(email);
+    const resp = await apiCall(windowRef.userAgent, 'POST', `/users/forgot-password`, { email })
+    console.log('forgotPassword: ', resp);
+    return { ok: true, message: 'Ok' };
+  } catch (err: any) {
+    return { ok: false, message: err.message };
+  }
+}
 
-  const cognitoUser = new CognitoUser(userData);
-
-  return new Promise(function (resolve: any, reject: any) {
-    if (!cognitoUser) {
-      reject(`Could not find ${email}`);
-      return;
-    }
-
-    cognitoUser.confirmPassword(code, password, {
-      onSuccess: function (res: any) {
-        resolve(res);
-      },
-      onFailure: function (err: any) {
-        reject(err);
-      },
-    });
-  }).catch((err) => {
-    throw err;
-  });
+export async function ResetPassword(windowRef: any, email: any, password: any, code: any) {
+  try {
+    //const resp = Auth.forgotPasswordSubmit(email, code, password);
+    const resp = await apiCall(windowRef.userAgent, 'PUT', `/users/reset-password`, { email, code, password })
+    console.log('ResetPassword: ', resp);
+    return { ok: true, message: 'Ok' };
+  } catch (err: any) {
+    return { ok: false, message: err.message };
+  }
 }
 
 export function signOut() {
