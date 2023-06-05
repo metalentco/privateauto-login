@@ -45,7 +45,7 @@ const Forgot = () => {
   const resetPassword = async () => {
     try {
       setIsLoading(true);
-      await forgotPassword(window, email);
+      await forgotPassword(email);
       setAction(Action.FORGOT);
       setIsLoading(false);
       router.push("/code");

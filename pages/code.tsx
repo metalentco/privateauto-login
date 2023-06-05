@@ -54,7 +54,7 @@ const Code = () => {
   const resetPassword = async () => {
     try {
       setIsLoading(true);
-      await ResetPassword(window, email, password, code);
+      await ResetPassword(email, password, code);
       setAction(Action.RESET);
       setIsLoading(false);
       router.push("/");

@@ -3,6 +3,8 @@ import Base64 from 'crypto-js/enc-base64';
 import { Amplify, Auth } from 'aws-amplify';
 
 const secret = 'EZScretJwtKey';
+let userAgent: string;
+let apiUrl: string;
 
 interface Result {
   readonly ok: boolean;
@@ -11,14 +13,17 @@ interface Result {
 
 function getParamterHash(userAgent: string, url: string, body = {}) {
   const payload = { body, userAgent, url };
+  console.log(payload);
   return Base64.stringify(hmacSHA256(JSON.stringify(payload), secret));
 }
 
 async function getConfig(windowRef: any): Promise<any> {
-  const { userAgent } = windowRef.navigator;
+  userAgent = windowRef.navigator.userAgent;
   const base = windowRef.location?.hostname;
   const appDomain = windowRef.location.hostname === 'localhost' ? 'localhost' : windowRef.location.hostname.slice(4);
   const appUrl = `https://app.${base}`;
+
+  console.log(`userAgent: ${userAgent}`);
 
   let region = process.env.NEXT_PUBLIC_REGION;
   let amplifyUserPoolId = process.env.NEXT_PUBLIC_USERPOOL_ID;
@@ -27,6 +32,7 @@ async function getConfig(windowRef: any): Promise<any> {
   let redirectUrl = process.env.NEXT_PUBLIC_REDIRECT_URL;
   let authDomain = process.env.NEXT_PUBLIC_AUTH_DOMAIN;
   let appConfigUrl = process.env.NEXT_PUBLIC_CONFIG_URL;
+  apiUrl = process.env.NEXT_PUBLIC_API_URL ?? appConfigUrl ?? '';
 
   if (appConfigUrl) {
     const appConfg = await fetch(`${appConfigUrl}/api/appconfig`, {
@@ -80,6 +86,7 @@ async function getConfig(windowRef: any): Promise<any> {
   return {
     appUrl,
     appDomain,
+    userAgent,
     redirectUrl: redirectUrl ?? appUrl
   };
 
@@ -128,8 +135,8 @@ export async function signIn(email: string, password: string): Promise<Result> {
 }
 
 
-async function apiCall(userAgent: string, method: string, path: string, body: any) {
-  const url = `/api${path.startsWith('/') ? '' : '/'}${path}`
+async function apiCall(method: string, path: string, body: any) {
+  const url = `${apiUrl}/api${path.startsWith('/') ? '' : '/'}${path}`
   return fetch(url, {
     method,
     headers: {
@@ -140,14 +147,12 @@ async function apiCall(userAgent: string, method: string, path: string, body: an
     body: JSON.stringify(body)
   })
     .then((res) => res.json())
-
-
 }
 
-export async function forgotPassword(windowRef: any, email: string): Promise<Result> {
+export async function forgotPassword(email: string): Promise<Result> {
   try {
     // const resp = await Auth.forgotPassword(email);
-    const resp = await apiCall(windowRef.userAgent, 'POST', `/users/forgot-password`, { email })
+    const resp = await apiCall('POST', `/users/forgot-password`, { email })
     console.log('forgotPassword: ', resp);
     return { ok: true, message: 'Ok' };
   } catch (err: any) {
@@ -155,10 +160,10 @@ export async function forgotPassword(windowRef: any, email: string): Promise<Res
   }
 }
 
-export async function ResetPassword(windowRef: any, email: any, password: any, code: any) {
+export async function ResetPassword(email: any, password: any, code: any) {
   try {
     //const resp = Auth.forgotPasswordSubmit(email, code, password);
-    const resp = await apiCall(windowRef.userAgent, 'PUT', `/users/reset-password`, { email, code, password })
+    const resp = await apiCall('PUT', `/users/reset-password`, { email, code, password })
     console.log('ResetPassword: ', resp);
     return { ok: true, message: 'Ok' };
   } catch (err: any) {
