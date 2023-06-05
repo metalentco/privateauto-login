@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
@@ -6,45 +6,14 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Loading from "@/components/Loading";
 import { checkEmail } from "@/libs/utils";
-
-// import { signIn } from "@/libs/cognito";
-import { Amplify, Auth } from 'aws-amplify';
-
-
-const region = process.env.AWS_REGION || 'us-east-2';
-const userPoolId = process.env.NEXT_PUBLIC_USERPOOL_ID;
-const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
-const appDomain = process.env.NEXT_PUBLIC_AUTH_APP_DOMAIN || 'app.padev.xyz'
-const redirectUrl = process.env.NEXT_PUBLIC_REDIRECT_URL
-
-console.log(`appDomain: ${appDomain}`);
-
-Amplify.configure({
-  aws_project_region: region,
-  // aws_cognito_identity_pool_id: appConfig.amplifyIdentityPoolId,
-  aws_cognito_region: region,
-  aws_user_pools_id: userPoolId,
-  aws_user_pools_web_client_id: clientId,
-  Auth: {
-    // identityPoolId: appConfig.amplifyIdentityPoolId,
-    // identityPoolRegion: region,
-    region: region,
-    userPoolId: userPoolId,
-    userPoolWebClientId: clientId,
-    cookieStorage: {
-      domain: appDomain,
-      path: '/',
-      expires: 365,
-      sameSite: 'lax',
-      secure: appDomain !== 'localhost',
-    },
-  },
-});
-
-
-
+import { Auth } from 'aws-amplify';
+import { initConfig } from "@/libs/cognito";
 
 const basePath = process.env.BASEPATH || '';
+let redirectUrl: string;
+
+
+enum Action { OPEN, CLOSE, LOGIN };
 
 const Home = () => {
   const [showPassword, setShowPassword] = useState<Boolean>(false);
@@ -53,40 +22,61 @@ const Home = () => {
   const [isEmailError, setIsEmailError] = useState<Boolean>(false);
   const [isPasswordError, setIsPasswordError] = useState<Boolean>(false);
   const [isLoading, setIsLoading] = useState<Boolean>(false);
+  const [action, setAction] = useState<Action>(Action.OPEN);
+  const [errorMsg, setErrorMsg] = useState<string>();
+
+  useEffect(() => {
+    initConfig(window).then((cfg: any) => { redirectUrl = cfg.redirectUrl });
+  }, []);
+
+  useEffect(() => {
+    if (action === Action.CLOSE) {
+      window.close();
+    } else if (action === Action.LOGIN) {
+      if (window.parent)
+        window.parent.location.replace(redirectUrl);
+      else
+        window.location.replace(redirectUrl);
+    }
+
+  }, [action]);
 
   const submit = async () => {
     setIsEmailError(email == "" || !checkEmail(email));
     setIsPasswordError(password == "");
 
     if (email != "" && checkEmail(email) && password != "") {
+      setIsLoading(true);
       try {
-        setIsLoading(true);
-        const response: any = await Auth.signIn(email, password);
-        console.log('login succeeded...notifying parent');
-        if (window.top && redirectUrl)
-          window.top.location.href = redirectUrl;
-        window.close();
-        setIsLoading(false);
-      } catch (err: any) {
-        window.parent.postMessage(
-          {
-            formSubmitted: false,
-            formName: "signin",
-            error: err.message,
-          },
-          "*"
-        );
-        setIsLoading(false);
-        console.log(err.message);
+        const result = await Auth.signIn(email, password);
+        console.log(result);
+        setAction(Action.LOGIN);
+      } catch (e: any) {
+        switch (e.name) {
+          case 'UserNotFoundException':
+          case 'NotAuthorizedException':
+            setErrorMsg('User name or password was entered incorrectly.');
+            break;
+          default:
+            console.log(JSON.stringify(e));
+            setErrorMsg('There was a problem signing in to your account.');
+
+        }
       }
     }
-  };
+    setIsLoading(false);
+  }
+
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       submit();
     }
   };
+
+  function closeApp(): any {
+    setAction(Action.CLOSE);
+  }
 
   return (
     <div>
@@ -97,7 +87,6 @@ const Home = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="w-full bg-[#fff]">
-        <Header />
         <div
           className={`w-full flex justify-center py-8 ${isLoading && "opacity-40"
             }`}
@@ -184,6 +173,13 @@ const Home = () => {
               )}
             </div>
             <div className="py-2">
+              {errorMsg && errorMsg != '' ? (
+                <div className="text-xs text-left text-[#ed0a0a] pt-2">
+                  {errorMsg}
+                </div>
+              ) : (
+                ""
+              )}
               <button
                 className="w-full bg-[#00b3de] hover:opacity-80 text-[#fff] text-base font-bold py-3 px-4 border border-[#00a0c7] rounded cursor-pointer"
                 onClick={() => submit()}
