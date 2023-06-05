@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Image from "next/image";
@@ -14,9 +14,11 @@ import {
   checkEmail,
 } from "@/libs/utils";
 
-import { signUp } from "@/libs/cognito";
+import { initConfig, signUp } from "@/libs/cognito";
 
 const basePath = process.env.BASEPATH || '';
+
+enum Action { OPEN, CLOSE, SIGNUP, FAIL };
 
 
 const Signup = () => {
@@ -30,6 +32,36 @@ const Signup = () => {
   const [isFirstnameError, setIsFirstnameError] = useState<Boolean>(false);
   const [isLastnameError, setIsLastnameError] = useState<Boolean>(false);
   const [isLoading, setIsLoading] = useState<Boolean>(false);
+  const [appOpen, setAppOpen] = useState<Boolean>(true);
+  const [action, setAction] = useState<Action>(Action.OPEN);
+  const [lastError, setLastError] = useState<string>('');
+  const [redirectUrl, setRedirectUrl] = useState<string>('');
+
+  useEffect(() => {
+    initConfig(window).then((cfg: any) => { setRedirectUrl(cfg.redirectUrl) });
+  }, []);
+
+
+  useEffect(() => {
+    if (action === Action.SIGNUP) {
+      window?.parent && window.parent.postMessage(
+        { formSubmitted: true, formName: "signup" },
+        "*"
+      );
+      if (window.parent)
+        window.parent.location.replace(redirectUrl);
+      else
+        window.location.replace(redirectUrl);
+    } else if (action === Action.FAIL && window) {
+      window?.parent && window.parent.postMessage(
+        { formSubmitted: false, formName: "signup", error: lastError },
+        "*"
+      );
+    } else if (action === Action.CLOSE && window) {
+      window.close();
+    }
+  }, [action, lastError, redirectUrl]);
+
 
   const create = async () => {
     setIsEmailError(email == "" || !checkEmail(email));
@@ -47,17 +79,12 @@ const Signup = () => {
     ) {
       try {
         setIsLoading(true);
-        await signUp(email, password);
-        window.parent.postMessage(
-          { formSubmitted: true, formName: "signup" },
-          "*"
-        );
+        await signUp(email, password, lastname, firstname);
+        setAction(Action.SIGNUP);
         setIsLoading(false);
       } catch (err: any) {
-        window.parent.postMessage(
-          { formSubmitted: false, formName: "signup", error: err.message },
-          "*"
-        );
+        setLastError(err.message);
+        setAction(Action.FAIL);
         setIsLoading(false);
         console.log(err.message);
       }
@@ -69,9 +96,17 @@ const Signup = () => {
     }
   };
 
+  function closeApp() {
+    setAppOpen(false);
+  }
+
+  useEffect(() => {
+    if (!appOpen && window)
+      window.close();
+  }, [appOpen]);
+
   return (
     <div className="w-full bg-[#fff]">
-      <Header />
       <div className="w-full flex justify-center py-8">
         <div className={`w-4/5 sm:w-[60%] ${isLoading && "opacity-40"}`}>
           <div className="text-[2rem] text-[#212529] font-bold">

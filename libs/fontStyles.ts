@@ -10,7 +10,7 @@ export const fontRegularStyles = `
 export const fontBoldStyles = `
   @font-face {
     font-family: "Proxima Nova";
-    src: url(${process.env.BASEPATH}/fonts/ProximaNova-bold.woff2) format("woff2");
+    src: url(${process.env.BASEPATH}/fonts/ProximaNova-Bold.woff2) format("woff2");
     font-weight: 700;
     font-style: normal;
   }

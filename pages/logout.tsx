@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 import Loading from "@/components/Loading";
 import { signOut } from "@/libs/cognito";
 
+
+
 const Logout = () => {
   const [isLoading, setIsLoading] = useState<Boolean>(false);
+
   useEffect(() => {
     try {
       signOut();
-      window.parent.postMessage(
+      window?.parent && window.parent.postMessage(
         {
           formSubmitted: true,
           formName: "logout",
@@ -16,7 +19,7 @@ const Logout = () => {
       );
       setIsLoading(false);
     } catch (err: any) {
-      window.parent.postMessage(
+      window?.parent && window.parent.postMessage(
         {
           formSubmitted: false,
           formName: "logout",
