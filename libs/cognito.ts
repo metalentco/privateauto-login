@@ -136,11 +136,13 @@ export async function signIn(email: string, password: string): Promise<Result> {
 
 
 async function apiCall(method: string, path: string, body: any) {
-  const url = `${apiUrl}/api${path.startsWith('/') ? '' : '/'}${path}`
-  return fetch(url, {
+  const url = `/api${path.startsWith('/') ? '' : '/'}${path}`
+  return fetch(`${apiUrl}${url}`, {
     method,
     headers: {
-      'X-PA': getParamterHash(userAgent, url, body ?? {}),
+      // pending completion of PAAPI-276, we need ot exclude  the body from the hash
+      // 'X-PA': getParamterHash(userAgent, url, body ?? {}),
+      'X-PA': getParamterHash(userAgent, url, {}),
       'x-client': userAgent,
       'accept': 'application/json'
     },
@@ -151,6 +153,7 @@ async function apiCall(method: string, path: string, body: any) {
 
 export async function forgotPassword(email: string): Promise<Result> {
   try {
+    // the normal Cognito approach would be:
     // const resp = await Auth.forgotPassword(email);
     const resp = await apiCall('POST', `/users/forgot-password`, { email })
     console.log('forgotPassword: ', resp);
@@ -162,7 +165,8 @@ export async function forgotPassword(email: string): Promise<Result> {
 
 export async function ResetPassword(email: any, password: any, code: any) {
   try {
-    //const resp = Auth.forgotPasswordSubmit(email, code, password);
+    // the normal Cognito approach would be:
+    // const resp = Auth.forgotPasswordSubmit(email, code, password);
     const resp = await apiCall('PUT', `/users/reset-password`, { email, code, password })
     console.log('ResetPassword: ', resp);
     return { ok: true, message: 'Ok' };
