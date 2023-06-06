@@ -140,10 +140,9 @@ async function apiCall(method: string, path: string, body: any) {
   return fetch(`${apiUrl}${url}`, {
     method,
     headers: {
-      // pending completion of PAAPI-276, we need ot exclude  the body from the hash
-      // 'X-PA': getParamterHash(userAgent, url, body ?? {}),
-      'X-PA': getParamterHash(userAgent, url, {}),
+      'X-PA': getParamterHash(userAgent, url, body ?? {}),
       'x-client': userAgent,
+      'content-type': 'application/json',
       'accept': 'application/json'
     },
     body: JSON.stringify(body)
