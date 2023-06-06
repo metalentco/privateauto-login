@@ -13,7 +13,6 @@ interface Result {
 
 function getParamterHash(userAgent: string, url: string, body = {}) {
   const payload = { body, userAgent, url };
-  console.log(payload);
   return Base64.stringify(hmacSHA256(JSON.stringify(payload), secret));
 }
 
@@ -22,8 +21,6 @@ async function getConfig(windowRef: any): Promise<any> {
   const base = windowRef.location?.hostname;
   const appDomain = windowRef.location.hostname === 'localhost' ? 'localhost' : windowRef.location.hostname.slice(4);
   const appUrl = `https://app.${base}`;
-
-  console.log(`userAgent: ${userAgent}`);
 
   let region = process.env.NEXT_PUBLIC_REGION;
   let amplifyUserPoolId = process.env.NEXT_PUBLIC_USERPOOL_ID;
@@ -155,7 +152,6 @@ export async function forgotPassword(email: string): Promise<Result> {
     // the normal Cognito approach would be:
     // const resp = await Auth.forgotPassword(email);
     const resp = await apiCall('POST', `/users/forgot-password`, { email })
-    console.log('forgotPassword: ', resp);
     return { ok: true, message: 'Ok' };
   } catch (err: any) {
     return { ok: false, message: err.message };
@@ -167,7 +163,6 @@ export async function ResetPassword(email: any, password: any, code: any) {
     // the normal Cognito approach would be:
     // const resp = Auth.forgotPasswordSubmit(email, code, password);
     const resp = await apiCall('PUT', `/users/reset-password`, { email, code, password })
-    console.log('ResetPassword: ', resp);
     return { ok: true, message: 'Ok' };
   } catch (err: any) {
     return { ok: false, message: err.message };
