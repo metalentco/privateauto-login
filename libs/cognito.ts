@@ -111,7 +111,7 @@ const currentUser: any = async () => {
 
 export async function signUp(email: string, password: string, family_name: string, given_name: string) {
   await Auth.signOut();
-  return await Auth.signUp({
+  await Auth.signUp({
     username: email,
     password,
     attributes: {
@@ -120,6 +120,7 @@ export async function signUp(email: string, password: string, family_name: strin
       given_name,
     },
   });
+  await Auth.signIn(email, password)
 }
 
 export async function signIn(email: string, password: string): Promise<Result> {

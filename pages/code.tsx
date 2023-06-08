@@ -57,7 +57,7 @@ const Code = () => {
       await ResetPassword(email, password, code);
       setAction(Action.RESET);
       setIsLoading(false);
-      router.push("/");
+      router.push("/", { query: router.query });
     } catch (err) {
       if (err instanceof Error) {
         setLastError(err.message);
@@ -87,7 +87,7 @@ const Code = () => {
           </div>
           <div className="text-base font-medium pt-2">
             Back to{" "}
-            <Link href="/">
+            <Link href={`/?${new URLSearchParams(router.query as any).toString()}`}>
               <span className="text-[#00b3de] underline">Sign in</span>
             </Link>
           </div>
