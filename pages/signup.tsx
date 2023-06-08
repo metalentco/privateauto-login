@@ -15,6 +15,7 @@ import {
 } from "@/libs/utils";
 
 import { initConfig, signUp } from "@/libs/cognito";
+import { parseUrlWithPathParams, useAuthParams } from "@/libs/hooks/useAppPathParams";
 
 const basePath = process.env.BASEPATH || '';
 
@@ -36,6 +37,7 @@ const Signup = () => {
   const [action, setAction] = useState<Action>(Action.OPEN);
   const [lastError, setLastError] = useState<string>('');
   const [redirectUrl, setRedirectUrl] = useState<string>('');
+  const pathParams = useAuthParams()
 
   useEffect(() => {
     initConfig(window).then((cfg: any) => { setRedirectUrl(cfg.redirectUrl) });
@@ -49,9 +51,9 @@ const Signup = () => {
         "*"
       );
       if (window.parent)
-        window.parent.location.replace(redirectUrl);
+        window.parent.location.replace(parseUrlWithPathParams(redirectUrl, pathParams));
       else
-        window.location.replace(redirectUrl);
+        window.location.replace(parseUrlWithPathParams(redirectUrl, pathParams));
     } else if (action === Action.FAIL && window) {
       window?.parent && window.parent.postMessage(
         { formSubmitted: false, formName: "signup", error: lastError },

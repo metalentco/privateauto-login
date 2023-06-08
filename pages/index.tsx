@@ -8,6 +8,7 @@ import Loading from "@/components/Loading";
 import { checkEmail } from "@/libs/utils";
 import { Auth } from 'aws-amplify';
 import { initConfig } from "@/libs/cognito";
+import { parseUrlWithPathParams, useAuthParams } from "@/libs/hooks/useAppPathParams";
 
 const basePath = process.env.BASEPATH || '';
 let redirectUrl: string;
@@ -24,6 +25,7 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState<Boolean>(false);
   const [action, setAction] = useState<Action>(Action.OPEN);
   const [errorMsg, setErrorMsg] = useState<string>();
+  const pathParams = useAuthParams()
 
   useEffect(() => {
     initConfig(window).then((cfg: any) => { redirectUrl = cfg.redirectUrl });
@@ -34,9 +36,9 @@ const Home = () => {
       window.close();
     } else if (action === Action.LOGIN) {
       if (window.parent)
-        window.parent.location.replace(redirectUrl);
+        window.parent.location.replace(parseUrlWithPathParams(redirectUrl, pathParams));
       else
-        window.location.replace(redirectUrl);
+        window.location.replace(parseUrlWithPathParams(redirectUrl, pathParams));
     }
 
   }, [action]);
