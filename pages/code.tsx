@@ -29,8 +29,6 @@ const Code = () => {
   const [isLoading, setIsLoading] = useState<Boolean>(false);
   const [action, setAction] = useState<Action>(Action.OPEN);
   const [lastError, setLastError] = useState<string>('');
-  const pathParams = useAuthParams()
-  console.log('pathParams: ', pathParams);
 
 
   useEffect(() => {
