@@ -7,7 +7,7 @@ import {
   checkEmail,
 } from "@/libs/utils";
 
-const basePath = process.env.BASEPATH || '';
+const basePath = process.env.BASEPATH || "";
 
 type Props = {
   password: string;
@@ -83,7 +83,7 @@ const StrongPassword = ({ password }: Props) => {
                     : "text-[#212529]"
                 }`}
               >
-                One special character (!@#)
+                One special character (!@#...)
               </p>
             </div>
             <div className="flex space-x-1 text-sm">
