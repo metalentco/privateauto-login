@@ -116,7 +116,7 @@ const Signup = () => {
           </div>
           <div className="text-base text-[#212529] font-medium py-2">
             Already have an account?&nbsp;
-            <Link href="/">
+            <Link href={`/?${new URLSearchParams(router.query as any).toString()}`}>
               <span className="text-[#00b3de] underline">Sign in</span>
             </Link>
           </div>

@@ -29,6 +29,8 @@ const Code = () => {
   const [isLoading, setIsLoading] = useState<Boolean>(false);
   const [action, setAction] = useState<Action>(Action.OPEN);
   const [lastError, setLastError] = useState<string>('');
+  const pathParams = useAuthParams()
+  console.log('pathParams: ', pathParams);
 
 
   useEffect(() => {
@@ -57,7 +59,7 @@ const Code = () => {
       await ResetPassword(email, password, code);
       setAction(Action.RESET);
       setIsLoading(false);
-      router.push("/");
+      router.push("/", { query: router.query });
     } catch (err) {
       if (err instanceof Error) {
         setLastError(err.message);
@@ -87,7 +89,7 @@ const Code = () => {
           </div>
           <div className="text-base font-medium pt-2">
             Back to{" "}
-            <Link href="/">
+            <Link href={`/?${new URLSearchParams(router.query as any).toString()}`}>
               <span className="text-[#00b3de] underline">Sign in</span>
             </Link>
           </div>
