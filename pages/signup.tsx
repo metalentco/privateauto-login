@@ -73,7 +73,7 @@ const Signup = () => {
     } else if (action === Action.CLOSE && window) {
       window.close();
     }
-  }, [action, lastError, redirectUrl]);
+  }, [action, lastError, redirectUrl, pathParams]);
 
   const create = async () => {
     setIsEmailError(email == '' || !checkEmail(email));

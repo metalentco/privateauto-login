@@ -20,11 +20,12 @@ export default function App({ Component, pageProps }: AppProps) {
           ${fontBoldStyles}
         `}
       </style>
-      <script
+      <Script
         async
         src='https://www.googletagmanager.com/gtag/js?id=G-JZE2T8F8ME'
-      ></script>
-      <script
+      />
+      <Script
+        id='datalayer'
         dangerouslySetInnerHTML={{
           __html: `
             window.dataLayer = window.dataLayer || [];
@@ -34,7 +35,8 @@ export default function App({ Component, pageProps }: AppProps) {
           `,
         }}
       />
-      <script
+      <Script
+        id='reddit'
         dangerouslySetInnerHTML={{
           __html: `
         !(function (w, d) {
@@ -60,7 +62,8 @@ export default function App({ Component, pageProps }: AppProps) {
       `,
         }}
       />
-      <script
+      <Script
+        id='gtag0'
         dangerouslySetInnerHTML={{
           __html: `
             !(function (f, b, e, v, n, t, s) {
@@ -96,6 +99,7 @@ export default function App({ Component, pageProps }: AppProps) {
         src='https://www.googletagmanager.com/gtag/js?id=G-JZE2T8F8ME'
       />
       <Script
+        id='gtag'
         dangerouslySetInnerHTML={{
           __html: `
   window.dataLayer = window.dataLayer || [];
@@ -106,6 +110,7 @@ export default function App({ Component, pageProps }: AppProps) {
         }}
       />
       <Script
+        id='gtag1'
         dangerouslySetInnerHTML={{
           __html: `(function (w, d, s, l, i) {
             w[l] = w[l] || [];

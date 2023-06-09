@@ -43,7 +43,7 @@ const Home = () => {
         window.location.replace(parseUrlWithPathParams(redirectUrl, pathParams));
     }
 
-  }, [action]);
+  }, [action, pathParams]);
 
   const submit = async () => {
     setIsEmailError(email == "" || !checkEmail(email));
