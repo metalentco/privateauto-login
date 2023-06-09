@@ -125,9 +125,54 @@ export async function signUp(email: string, password: string, family_name: strin
 
 export async function signIn(email: string, password: string): Promise<Result> {
   try {
-    await Auth.signIn(email, password);
+    const user = await Auth.signIn(email, password);
+
+    if (user.challengeName === 'SMS_MFA' || user.challengeName === 'SOFTWARE_TOKEN_MFA') {
+      const code = ''; // from user input
+      const mfaType = undefined;  // MFA Type e.g. SMS_MFA, SOFTWARE_TOKEN_MFA
+      const loggedUser = await Auth.confirmSignIn(user, code, mfaType);
+    } else if (user.challengeName === 'NEW_PASSWORD_REQUIRED') {
+      // this is a hack to bypass the new password requirement
+      const newPassword = password;
+      const loggedUser = await Auth.completeNewPassword(user, newPassword);
+    } else if (user.challengeName === 'MFA_SETUP') {
+      // This happens when the MFA method is TOTP
+      Auth.setupTOTP(user);
+    } else if (user.challengeName === 'SELECT_MFA_TYPE') {
+      const mfaType = undefined;  // MFA Type e.g. SMS_MFA, SOFTWARE_TOKEN_MFA from user
+      user.sendMFASelectionAnswer(mfaType, {
+        onFailure: (err: any) => {
+          console.error(err);
+        },
+        mfaRequired: (challengeName: string, parameters: any) => {
+          // Auth.confirmSignIn with SMS code
+        },
+        totpRequired: (challengeName: string, parameters: any) => {
+          // Auth.confirmSignIn with TOTP code
+        }
+      });
+    } else {
+      // The user directly signs in
+      console.log(user);
+    }
     return { ok: true, message: 'Ok' };
+
   } catch (err: any) {
+    if (err.code === 'UserNotConfirmedException') {
+      // The error happens if the user didn't finish the confirmation step when signing up
+      // In this case you need to resend the code and confirm the user
+      // About how to resend the code and confirm the user, please check the signUp part
+    } else if (err.code === 'PasswordResetRequiredException') {
+      // The error happens when the password is reset in the Cognito console
+      // In this case you need to call forgotPassword to reset the password
+      // Please check the Forgot Password part.
+    } else if (err.code === 'NotAuthorizedException') {
+      // The error happens when the incorrect password is provided
+    } else if (err.code === 'UserNotFoundException') {
+      // The error happens when the supplied username/email does not exist in the Cognito user pool
+    } else {
+      console.log(err);
+    }
     return { ok: false, message: err.message };
   }
 }
@@ -171,7 +216,7 @@ export async function ResetPassword(email: any, password: any, code: any) {
 }
 
 export function signOut() {
-  if (currentUser) {
+  if (currentUser && currentUser.signOut) {
     currentUser.signOut();
   }
 }
