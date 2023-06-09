@@ -3,7 +3,8 @@ export const checkCharacterNumber = (str: string) => {
 };
 
 export const checkSpecialCharacter = (str: string) => {
-  return str.includes("!") || str.includes("@") || str.includes("#");
+  const regex = /[!@#$%^&*()_+\-=[\]{};'`:"\\|,.<>/?~]/;
+  return regex.test(str);
 };
 
 export const checkUpperLower = (str: string) => {
