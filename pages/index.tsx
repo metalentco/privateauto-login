@@ -52,6 +52,7 @@ const Home = () => {
     if (email != "" && checkEmail(email) && password != "") {
       setIsLoading(true);
       try {
+        await Auth.signOut()
         const result = await Auth.signIn(email, password);
         console.log(result);
         setAction(Action.LOGIN);
