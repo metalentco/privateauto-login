@@ -3,6 +3,8 @@ import Base64 from 'crypto-js/enc-base64';
 import { Amplify, Auth } from 'aws-amplify';
 
 const secret = 'EZScretJwtKey';
+let userAgent: string;
+let apiUrl: string;
 
 interface Result {
   readonly ok: boolean;
@@ -15,7 +17,7 @@ function getParamterHash(userAgent: string, url: string, body = {}) {
 }
 
 async function getConfig(windowRef: any): Promise<any> {
-  const { userAgent } = windowRef.navigator;
+  userAgent = windowRef.navigator.userAgent;
   const base = windowRef.location?.hostname;
   const appDomain = windowRef.location.hostname === 'localhost' ? 'localhost' : windowRef.location.hostname.slice(4);
   const appUrl = `https://app.${base}`;
@@ -27,6 +29,7 @@ async function getConfig(windowRef: any): Promise<any> {
   let redirectUrl = process.env.NEXT_PUBLIC_REDIRECT_URL;
   let authDomain = process.env.NEXT_PUBLIC_AUTH_DOMAIN;
   let appConfigUrl = process.env.NEXT_PUBLIC_CONFIG_URL;
+  apiUrl = process.env.NEXT_PUBLIC_API_URL ?? appConfigUrl ?? '';
 
   if (appConfigUrl) {
     const appConfg = await fetch(`${appConfigUrl}/api/appconfig`, {
@@ -80,6 +83,7 @@ async function getConfig(windowRef: any): Promise<any> {
   return {
     appUrl,
     appDomain,
+    userAgent,
     redirectUrl: redirectUrl ?? appUrl
   };
 
@@ -107,7 +111,7 @@ const currentUser: any = async () => {
 
 export async function signUp(email: string, password: string, family_name: string, given_name: string) {
   await Auth.signOut();
-  return await Auth.signUp({
+  await Auth.signUp({
     username: email,
     password,
     attributes: {
@@ -116,50 +120,95 @@ export async function signUp(email: string, password: string, family_name: strin
       given_name,
     },
   });
+  await Auth.signIn(email, password)
 }
 
 export async function signIn(email: string, password: string): Promise<Result> {
   try {
-    await Auth.signIn(email, password);
+    const user = await Auth.signIn(email, password);
+
+    if (user.challengeName === 'SMS_MFA' || user.challengeName === 'SOFTWARE_TOKEN_MFA') {
+      const code = ''; // from user input
+      const mfaType = undefined;  // MFA Type e.g. SMS_MFA, SOFTWARE_TOKEN_MFA
+      const loggedUser = await Auth.confirmSignIn(user, code, mfaType);
+    } else if (user.challengeName === 'NEW_PASSWORD_REQUIRED') {
+      // this is a hack to bypass the new password requirement
+      const newPassword = password;
+      const loggedUser = await Auth.completeNewPassword(user, newPassword);
+    } else if (user.challengeName === 'MFA_SETUP') {
+      // This happens when the MFA method is TOTP
+      Auth.setupTOTP(user);
+    } else if (user.challengeName === 'SELECT_MFA_TYPE') {
+      const mfaType = undefined;  // MFA Type e.g. SMS_MFA, SOFTWARE_TOKEN_MFA from user
+      user.sendMFASelectionAnswer(mfaType, {
+        onFailure: (err: any) => {
+          console.error(err);
+        },
+        mfaRequired: (challengeName: string, parameters: any) => {
+          // Auth.confirmSignIn with SMS code
+        },
+        totpRequired: (challengeName: string, parameters: any) => {
+          // Auth.confirmSignIn with TOTP code
+        }
+      });
+    } else {
+      // The user directly signs in
+      console.log(user);
+    }
     return { ok: true, message: 'Ok' };
+
   } catch (err: any) {
+    if (err.code === 'UserNotConfirmedException') {
+      // The error happens if the user didn't finish the confirmation step when signing up
+      // In this case you need to resend the code and confirm the user
+      // About how to resend the code and confirm the user, please check the signUp part
+    } else if (err.code === 'PasswordResetRequiredException') {
+      // The error happens when the password is reset in the Cognito console
+      // In this case you need to call forgotPassword to reset the password
+      // Please check the Forgot Password part.
+    } else if (err.code === 'NotAuthorizedException') {
+      // The error happens when the incorrect password is provided
+    } else if (err.code === 'UserNotFoundException') {
+      // The error happens when the supplied username/email does not exist in the Cognito user pool
+    } else {
+      console.log(err);
+    }
     return { ok: false, message: err.message };
   }
 }
 
 
-async function apiCall(userAgent: string, method: string, path: string, body: any) {
+async function apiCall(method: string, path: string, body: any) {
   const url = `/api${path.startsWith('/') ? '' : '/'}${path}`
-  return fetch(url, {
+  return fetch(`${apiUrl}${url}`, {
     method,
     headers: {
       'X-PA': getParamterHash(userAgent, url, body ?? {}),
       'x-client': userAgent,
+      'content-type': 'application/json',
       'accept': 'application/json'
     },
     body: JSON.stringify(body)
   })
     .then((res) => res.json())
-
-
 }
 
-export async function forgotPassword(windowRef: any, email: string): Promise<Result> {
+export async function forgotPassword(email: string): Promise<Result> {
   try {
+    // the normal Cognito approach would be:
     // const resp = await Auth.forgotPassword(email);
-    const resp = await apiCall(windowRef.userAgent, 'POST', `/users/forgot-password`, { email })
-    console.log('forgotPassword: ', resp);
+    const resp = await apiCall('POST', `/users/forgot-password`, { email })
     return { ok: true, message: 'Ok' };
   } catch (err: any) {
     return { ok: false, message: err.message };
   }
 }
 
-export async function ResetPassword(windowRef: any, email: any, password: any, code: any) {
+export async function ResetPassword(email: any, password: any, code: any) {
   try {
-    //const resp = Auth.forgotPasswordSubmit(email, code, password);
-    const resp = await apiCall(windowRef.userAgent, 'PUT', `/users/reset-password`, { email, code, password })
-    console.log('ResetPassword: ', resp);
+    // the normal Cognito approach would be:
+    // const resp = Auth.forgotPasswordSubmit(email, code, password);
+    const resp = await apiCall('PUT', `/users/reset-password`, { email, code, password })
     return { ok: true, message: 'Ok' };
   } catch (err: any) {
     return { ok: false, message: err.message };
@@ -167,7 +216,7 @@ export async function ResetPassword(windowRef: any, email: any, password: any, c
 }
 
 export function signOut() {
-  if (currentUser) {
+  if (currentUser && currentUser.signOut) {
     currentUser.signOut();
   }
 }

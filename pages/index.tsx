@@ -8,6 +8,8 @@ import Loading from "@/components/Loading";
 import { checkEmail } from "@/libs/utils";
 import { Auth } from 'aws-amplify';
 import { initConfig } from "@/libs/cognito";
+import { parseUrlWithPathParams, useAuthParams } from "@/libs/hooks/useAppPathParams";
+import { useRouter } from "next/router";
 
 const basePath = process.env.BASEPATH || '';
 let redirectUrl: string;
@@ -24,6 +26,8 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState<Boolean>(false);
   const [action, setAction] = useState<Action>(Action.OPEN);
   const [errorMsg, setErrorMsg] = useState<string>();
+  const pathParams = useAuthParams()
+  const router = useRouter()
 
   useEffect(() => {
     initConfig(window).then((cfg: any) => { redirectUrl = cfg.redirectUrl });
@@ -34,12 +38,12 @@ const Home = () => {
       window.close();
     } else if (action === Action.LOGIN) {
       if (window.parent)
-        window.parent.location.replace(redirectUrl);
+        window.parent.location.replace(parseUrlWithPathParams(redirectUrl, pathParams));
       else
-        window.location.replace(redirectUrl);
+        window.location.replace(parseUrlWithPathParams(redirectUrl, pathParams));
     }
 
-  }, [action]);
+  }, [action, pathParams]);
 
   const submit = async () => {
     setIsEmailError(email == "" || !checkEmail(email));
@@ -48,6 +52,7 @@ const Home = () => {
     if (email != "" && checkEmail(email) && password != "") {
       setIsLoading(true);
       try {
+        await Auth.signOut()
         const result = await Auth.signIn(email, password);
         console.log(result);
         setAction(Action.LOGIN);
@@ -95,7 +100,7 @@ const Home = () => {
             <div className="text-[2rem] text-[#212529] font-bold">Sign in</div>
             <div className="text-base text-[#212529] font-medium py-2">
               New to Here?&nbsp;
-              <Link href="/signup">
+              <Link href={`/signup?${new URLSearchParams(router.query as any).toString()}`}>
                 <span className="text-[#00b3de] underline">
                   Create an account
                 </span>
@@ -188,13 +193,13 @@ const Home = () => {
               </button>
             </div>
             <div className="py-2">
-              <Link href="/forgot">
+              <Link href={`/forgot?${new URLSearchParams(router.query as any).toString()}`}>
                 <span className="text-[#00b3de] font-medium">
                   Forgot Password?
                 </span>
               </Link>
               &nbsp;or&nbsp;
-              <Link href="/code">
+              <Link href={`/code?${new URLSearchParams(router.query as any).toString()}`}>
                 <span className="text-[#00b3de] font-medium">
                   Enter code here
                 </span>

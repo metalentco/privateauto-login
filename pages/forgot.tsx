@@ -45,10 +45,10 @@ const Forgot = () => {
   const resetPassword = async () => {
     try {
       setIsLoading(true);
-      await forgotPassword(window, email);
+      await forgotPassword(email);
       setAction(Action.FORGOT);
       setIsLoading(false);
-      router.push("/code");
+      router.push("/code", );
     } catch (err) {
       if (err instanceof Error) {
         setLastError(err.message);
@@ -78,7 +78,7 @@ const Forgot = () => {
           </div>
           <div className="text-base font-medium pt-2">
             Back to{" "}
-            <Link href="/">
+            <Link href={`/?${new URLSearchParams(router.query as any).toString()}`}>
               <span className="text-[#00b3de] underline">Sign in</span>
             </Link>
           </div>
