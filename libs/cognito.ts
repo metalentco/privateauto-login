@@ -79,6 +79,7 @@ async function getConfig(windowRef: any): Promise<any> {
   }
 
   await Amplify.configure(awsConfig);
+  console.log('login awsConfig: ', awsConfig);
 
   return {
     appUrl,
