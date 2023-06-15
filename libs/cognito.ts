@@ -19,7 +19,7 @@ function getParamterHash(userAgent: string, url: string, body = {}) {
 async function getConfig(windowRef: any): Promise<any> {
   userAgent = windowRef.navigator.userAgent;
   const base = windowRef.location?.hostname;
-  const appDomain = windowRef.location.hostname === 'localhost' ? 'localhost' : windowRef.location.hostname.slice(4);
+  const appDomain = windowRef.location.hostname === 'localhost' ? 'localhost' : windowRef.location.hostname.split('.').slice(1).join('.');
   const appUrl = `https://app.${base}`;
 
   let region = process.env.NEXT_PUBLIC_REGION;
