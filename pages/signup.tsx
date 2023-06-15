@@ -15,6 +15,7 @@ import {
 } from '@/libs/utils';
 import { initConfig, signUp } from "@/libs/cognito";
 import { parseUrlWithPathParams, useAuthParams } from "@/libs/hooks/useAppPathParams";
+import { SocialSignin } from '@/components/SocialSignin';
 
 const basePath = process.env.BASEPATH || '';
 
@@ -251,6 +252,7 @@ const Signup = () => {
             </button>
           </div>
           <hr className='text-[#c4c4c4] my-2' />
+          <SocialSignin/>
           <Footer />
         </div>
         {isLoading && <Loading />}

@@ -10,6 +10,7 @@ import { Auth } from 'aws-amplify';
 import { initConfig } from "@/libs/cognito";
 import { parseUrlWithPathParams, useAuthParams } from "@/libs/hooks/useAppPathParams";
 import { useRouter } from "next/router";
+import { SocialSignin } from "@/components/SocialSignin";
 
 const basePath = process.env.BASEPATH || '';
 let redirectUrl: string;
@@ -206,6 +207,7 @@ const Home = () => {
               </Link>
             </div>
             <hr className="text-[#c4c4c4] my-2" />
+            <SocialSignin/>
             <Footer />
           </div>
         </div>
