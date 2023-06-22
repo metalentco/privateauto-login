@@ -38,14 +38,14 @@ const Code = () => {
         "*"
       );
     } else if (action === Action.FAIL && window) {
-      window?.parent && window.parent.postMessage(
-        {
-          formSubmitted: false,
-          formName: "resetPassword",
-          error: lastError,
-        },
-        "*"
-      );
+      // window?.parent && window.parent.postMessage(
+      //   {
+      //     formSubmitted: false,
+      //     formName: "resetPassword",
+      //     error: lastError,
+      //   },
+      //   "*"
+      // );
     } else if (action === Action.CLOSE && window) {
       window.close();
     }
@@ -60,8 +60,16 @@ const Code = () => {
       router.push("/", { query: router.query });
     } catch (err) {
       if (err instanceof Error) {
-        setLastError(err.message);
-        setAction(Action.FAIL);
+        window?.parent?.postMessage(
+          {
+            formSubmitted: false,
+            formName: "resetPassword",
+            error: lastError,
+          },
+          "*"
+        );
+        // setLastError(err.message);
+        // setAction(Action.FAIL);
         setIsLoading(false);
         console.log(err.message);
       }

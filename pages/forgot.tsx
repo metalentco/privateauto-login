@@ -27,14 +27,14 @@ const Forgot = () => {
         "*"
       );
     } else if (action === Action.FAIL && window) {
-      window?.parent && window.parent.postMessage(
-        {
-          formSubmitted: false,
-          formName: "forgot",
-          error: lastError,
-        },
-        "*"
-      );
+      // window?.parent && window.parent.postMessage(
+      //   {
+      //     formSubmitted: false,
+      //     formName: "forgot",
+      //     error: lastError,
+      //   },
+      //   "*"
+      // );
     } else if (action === Action.CLOSE && window) {
       window.close();
     }
@@ -51,8 +51,14 @@ const Forgot = () => {
       router.push("/code", );
     } catch (err) {
       if (err instanceof Error) {
-        setLastError(err.message);
-        setAction(Action.FAIL);
+        window?.parent?.postMessage(
+          {
+            formSubmitted: false,
+            formName: "forgot",
+            error: lastError,
+          },
+          "*"
+        );
         setIsLoading(false);
         console.log(err.message);
       }
