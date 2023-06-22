@@ -6,7 +6,12 @@ import Loading from "@/components/Loading";
 
 import { forgotPassword } from "@/libs/cognito";
 
-enum Action { OPEN, CLOSE, FORGOT, FAIL };
+enum Action {
+  OPEN,
+  CLOSE,
+  FORGOT,
+  FAIL,
+}
 
 const Forgot = () => {
   const router = useRouter();
@@ -14,7 +19,7 @@ const Forgot = () => {
   const [isBtnEnabled, setIsBtnEnabled] = useState<Boolean>(false);
   const [isLoading, setIsLoading] = useState<Boolean>(false);
   const [action, setAction] = useState<Action>(Action.OPEN);
-  const [lastError, setLastError] = useState<string>('');
+  const [lastError, setLastError] = useState<string>("");
 
   const regex = new RegExp(
     "([!#-'*+/-9=?A-Z^-~-]+(.[!#-'*+/-9=?A-Z^-~-]+)*|\"([]!#-[^-~ \t]|(\\[\t -~]))+\")@([!#-'*+/-9=?A-Z^-~-]+(.[!#-'*+/-9=?A-Z^-~-]+)*|[[\t -Z^-~]*])"
@@ -22,10 +27,11 @@ const Forgot = () => {
 
   useEffect(() => {
     if (action === Action.FORGOT) {
-      window?.parent && window.parent.postMessage(
-        { formSubmitted: true, formName: "forgot" },
-        "*"
-      );
+      window?.parent &&
+        window.parent.postMessage(
+          { formSubmitted: true, formName: "forgot" },
+          "*"
+        );
     } else if (action === Action.FAIL && window) {
       // window?.parent && window.parent.postMessage(
       //   {
@@ -40,22 +46,20 @@ const Forgot = () => {
     }
   }, [action, lastError]);
 
-
-
   const resetPassword = async () => {
     try {
       setIsLoading(true);
       await forgotPassword(email.toLowerCase());
       setAction(Action.FORGOT);
       setIsLoading(false);
-      router.push("/code", );
+      router.push("/code");
     } catch (err) {
       if (err instanceof Error) {
         window?.parent?.postMessage(
           {
             formSubmitted: false,
             formName: "forgot",
-            error: lastError,
+            error: err.message,
           },
           "*"
         );
@@ -84,7 +88,9 @@ const Forgot = () => {
           </div>
           <div className="text-base font-medium pt-2">
             Back to{" "}
-            <Link href={`/?${new URLSearchParams(router.query as any).toString()}`}>
+            <Link
+              href={`/?${new URLSearchParams(router.query as any).toString()}`}
+            >
               <span className="text-[#00b3de] underline">Sign in</span>
             </Link>
           </div>
