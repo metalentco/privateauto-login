@@ -209,7 +209,7 @@ export async function ResetPassword(email: any, password: any, code: any) {
   try {
     // the normal Cognito approach would be:
     // const resp = Auth.forgotPasswordSubmit(email, code, password);
-    const resp = await apiCall('PUT', `/users/reset-password`, { email, code, password })
+    const resp = await apiCall('POST', `/users/reset-password`, { email, code, password })
     return { ok: true, message: 'Ok' };
   } catch (err: any) {
     return { ok: false, message: err.message };

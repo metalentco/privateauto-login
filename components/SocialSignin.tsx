@@ -12,6 +12,9 @@ const ssoProviders = [
 
 export function SocialSignin() {
   const { initiateSocialSignin } = useSocialSignin()
+  if(process.env.NEXT_PUBLIC_ENABLE_SSO !== 'true') {
+    return null
+  }
   return (
     <>
       <p className="text-sm text-[#808080] font-normal leading-5	my-4">Or signin with</p>
