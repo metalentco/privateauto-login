@@ -4,7 +4,7 @@ import { Auth } from 'aws-amplify';
 
 export function useSocialSignin() {
   async function initiateSocialSignin(provider: CognitoHostedUIIdentityProvider) {
-    // await Auth.signOut()
+    await Auth.signOut({ global: true })
     window.parent?.postMessage(
       { type: FrameEventEnum.SOCIAL_SIGNIN, provider },
       "*"
