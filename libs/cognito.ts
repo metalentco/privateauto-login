@@ -110,6 +110,7 @@ const currentUser: any = async () => {
 }
 
 export async function signUp(email: string, password: string, family_name: string, given_name: string) {
+  email = email.toLowerCase()
   await Auth.signOut();
   await Auth.signUp({
     username: email,
@@ -199,11 +200,11 @@ async function apiCall(method: string, path: string, body: any) {
 }
 
 export async function forgotPassword(email: string) {
-  return apiCall('POST', `/users/forgot-password`, { email })
+  return apiCall('POST', `/users/forgot-password`, { email: email.toLowerCase() })
 }
 
 export async function ResetPassword(email: any, password: any, code: any) {
-  return apiCall('POST', `/users/reset-password`, { email, code, password })
+  return apiCall('POST', `/users/reset-password`, { email: email.toLowerCase(), code, password })
 }
 
 export function signOut() {
