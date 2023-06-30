@@ -153,7 +153,7 @@ const Code = () => {
           <div>
             <p className="text-base text-[#212529] font-medium py-2">Email</p>
             <input
-              type="text"
+              type="email"
               className="border-[#9797aa] focus:border-[#00a0c7] form-control w-full block px-4 py-2 text-base font-medium bg-white bg-clip-padding border border-solid  rounded m-0"
               value={email}
               onChange={(e: any) => setEmail(e.target.value)}

@@ -99,7 +99,7 @@ const Forgot = () => {
           </div>
           <div className="py-2">
             <input
-              type="text"
+              type="email"
               className="border-[#9797aa] focus:border-[#00a0c7] form-control w-full block px-4 py-2 text-base font-medium bg-white bg-clip-padding border border-solid  rounded m-0"
               placeholder="Email address"
               value={email}
