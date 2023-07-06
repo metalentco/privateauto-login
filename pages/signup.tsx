@@ -17,6 +17,7 @@ import { initConfig, signUp } from "@/libs/cognito";
 import { parseUrlWithPathParams, useAuthParams } from "@/libs/hooks/useAppPathParams";
 import { SocialSignin } from '@/components/SocialSignin';
 
+
 const basePath = process.env.BASEPATH || '';
 
 enum Action {
@@ -47,7 +48,8 @@ const Signup = () => {
   const [action, setAction] = useState<Action>(Action.OPEN);
   const [lastError, setLastError] = useState<string>('');
   const [redirectUrl, setRedirectUrl] = useState<string>('');
-  const pathParams = useAuthParams()
+
+  const pathParams = useAuthParams();
 
   useEffect(() => {
     initConfig(window).then((cfg: any) => {
@@ -57,14 +59,19 @@ const Signup = () => {
 
   useEffect(() => {
     if (action === Action.SIGNUP) {
-      window?.parent && window.parent.postMessage(
-        { formSubmitted: true, formName: "signup" },
-        "*"
-      );
+      window?.parent &&
+        window.parent.postMessage(
+          { formSubmitted: true, formName: 'signup' },
+          '*'
+        );
       if (window.parent)
-        window.parent.location.replace(parseUrlWithPathParams(redirectUrl, pathParams));
+        window.parent.location.replace(
+          parseUrlWithPathParams(redirectUrl, pathParams)
+        );
       else
-        window.location.replace(parseUrlWithPathParams(redirectUrl, pathParams));
+        window.location.replace(
+          parseUrlWithPathParams(redirectUrl, pathParams)
+        );
     } else if (action === Action.FAIL && window) {
       window?.parent &&
         window.parent.postMessage(
@@ -133,8 +140,10 @@ const Signup = () => {
           </div>
           <div className='text-base text-[#212529] font-medium py-2'>
             Already have an account?&nbsp;
-            <Link href={`/?${new URLSearchParams(router.query as any).toString()}`}>
-              <span className="text-[#00b3de] underline">Sign in</span>
+            <Link
+              href={`/?${new URLSearchParams(router.query as any).toString()}`}
+            >
+              <span className='text-[#00b3de] underline'>Sign in</span>
             </Link>
           </div>
           <div className='py-2'>

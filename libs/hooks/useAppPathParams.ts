@@ -1,19 +1,25 @@
-import { useRouter } from "next/router";
-import { useMemo } from "react";
+import { useRouter } from 'next/router';
+import { useMemo } from 'react';
 
 export function useAuthParams() {
-  const router = useRouter()
+  const router = useRouter();
   return useMemo(() => {
-    if(router.query.isCreateListing) {
-      return `/listing/steps?${new URLSearchParams(router.query as any)}`
+    if (router.query.isCreateListing) {
+      return `/listing/steps?${new URLSearchParams(router.query as any)}`;
     }
-    return ''
-  }, [router.query])
+    if (router.query.isCreateListing) {
+      return '/listing/';
+    }
+    if (router.query.isListingAction) {
+      return `/listing/${router.query.isListingAction}`;
+    }
+    return '';
+  }, [router.query]);
 }
 
 export function parseUrlWithPathParams(baseUrl: string, pathParams: string) {
   if(pathParams) {
     return baseUrl.endsWith('/') ? `${baseUrl.slice(0, -1)}${pathParams}` : `${baseUrl}${pathParams}`
   }
-  return baseUrl
+  return baseUrl;
 }
