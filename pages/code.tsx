@@ -15,10 +15,14 @@ import {
 
 import { ResetPassword } from "@/libs/cognito";
 
-const basePath = process.env.BASEPATH || '';
+const basePath = process.env.BASEPATH || "";
 
-enum Action { OPEN, CLOSE, RESET, FAIL };
-
+enum Action {
+  OPEN,
+  CLOSE,
+  RESET,
+  FAIL,
+}
 
 const Code = () => {
   const router = useRouter();
@@ -28,24 +32,24 @@ const Code = () => {
   const [email, setEmail] = useState<string>("");
   const [isLoading, setIsLoading] = useState<Boolean>(false);
   const [action, setAction] = useState<Action>(Action.OPEN);
-  const [lastError, setLastError] = useState<string>('');
-
+  const [lastError, setLastError] = useState<string>("");
 
   useEffect(() => {
     if (action === Action.RESET) {
-      window?.parent && window.parent.postMessage(
-        { formSubmitted: true, formName: "resetPassword" },
-        "*"
-      );
+      window?.parent &&
+        window.parent.postMessage(
+          { formSubmitted: true, formName: "resetPassword" },
+          "*"
+        );
     } else if (action === Action.FAIL && window) {
-      window?.parent && window.parent.postMessage(
-        {
-          formSubmitted: false,
-          formName: "resetPassword",
-          error: lastError,
-        },
-        "*"
-      );
+      // window?.parent && window.parent.postMessage(
+      //   {
+      //     formSubmitted: false,
+      //     formName: "resetPassword",
+      //     error: lastError,
+      //   },
+      //   "*"
+      // );
     } else if (action === Action.CLOSE && window) {
       window.close();
     }
@@ -60,8 +64,14 @@ const Code = () => {
       router.push("/", { query: router.query });
     } catch (err) {
       if (err instanceof Error) {
-        setLastError(err.message);
-        setAction(Action.FAIL);
+        window?.parent?.postMessage(
+          {
+            formSubmitted: false,
+            formName: "resetPassword",
+            error: err.message,
+          },
+          "*"
+        );
         setIsLoading(false);
         console.log(err.message);
       }
@@ -87,7 +97,9 @@ const Code = () => {
           </div>
           <div className="text-base font-medium pt-2">
             Back to{" "}
-            <Link href={`/?${new URLSearchParams(router.query as any).toString()}`}>
+            <Link
+              href={`/?${new URLSearchParams(router.query as any).toString()}`}
+            >
               <span className="text-[#00b3de] underline">Sign in</span>
             </Link>
           </div>
@@ -141,7 +153,7 @@ const Code = () => {
           <div>
             <p className="text-base text-[#212529] font-medium py-2">Email</p>
             <input
-              type="text"
+              type="email"
               className="border-[#9797aa] focus:border-[#00a0c7] form-control w-full block px-4 py-2 text-base font-medium bg-white bg-clip-padding border border-solid  rounded m-0"
               value={email}
               onChange={(e: any) => setEmail(e.target.value)}
@@ -150,7 +162,8 @@ const Code = () => {
           </div>
           <div className="py-6">
             <button
-              className={`w-full bg-[#17a2b8] text-white text-base font-bold py-2 px-4 border-[#117a8b] rounded ${email != "" &&
+              className={`w-full bg-[#17a2b8] text-white text-base font-bold py-2 px-4 border-[#117a8b] rounded ${
+                email != "" &&
                 checkEmail(email) &&
                 code != "" &&
                 password != "" &&
@@ -158,9 +171,9 @@ const Code = () => {
                 checkSpecialCharacter(password) &&
                 checkUpperLower(password) &&
                 checkNumber(password)
-                ? "opacity-100"
-                : "opacity-50"
-                }`}
+                  ? "opacity-100"
+                  : "opacity-50"
+              }`}
               onClick={() => resetPassword()}
               disabled={
                 !(

@@ -19,7 +19,7 @@ function getParamterHash(userAgent: string, url: string, body = {}) {
 async function getConfig(windowRef: any): Promise<any> {
   userAgent = windowRef.navigator.userAgent;
   const base = windowRef.location?.hostname;
-  const appDomain = windowRef.location.hostname === 'localhost' ? 'localhost' : windowRef.location.hostname.slice(4);
+  const appDomain = windowRef.location.hostname === 'localhost' ? 'localhost' : windowRef.location.hostname.split('.').slice(1).join('.');
   const appUrl = `https://app.${base}`;
 
   let region = process.env.NEXT_PUBLIC_REGION;
@@ -110,6 +110,7 @@ const currentUser: any = async () => {
 }
 
 export async function signUp(email: string, password: string, family_name: string, given_name: string) {
+  email = email.toLowerCase()
   await Auth.signOut();
   await Auth.signUp({
     username: email,
@@ -180,7 +181,7 @@ export async function signIn(email: string, password: string): Promise<Result> {
 
 async function apiCall(method: string, path: string, body: any) {
   const url = `/api${path.startsWith('/') ? '' : '/'}${path}`
-  return fetch(`${apiUrl}${url}`, {
+  const response = await fetch(`${apiUrl}${url}`, {
     method,
     headers: {
       'X-PA': getParamterHash(userAgent, url, body ?? {}),
@@ -190,29 +191,20 @@ async function apiCall(method: string, path: string, body: any) {
     },
     body: JSON.stringify(body)
   })
-    .then((res) => res.json())
+  const isOk = response.ok
+  const data = await response.json()
+  if(!isOk) {
+    throw new Error(data?.message || 'Network error')
+  }
+  return data
 }
 
-export async function forgotPassword(email: string): Promise<Result> {
-  try {
-    // the normal Cognito approach would be:
-    // const resp = await Auth.forgotPassword(email);
-    const resp = await apiCall('POST', `/users/forgot-password`, { email })
-    return { ok: true, message: 'Ok' };
-  } catch (err: any) {
-    return { ok: false, message: err.message };
-  }
+export async function forgotPassword(email: string) {
+  return apiCall('POST', `/users/forgot-password`, { email: email.toLowerCase() })
 }
 
 export async function ResetPassword(email: any, password: any, code: any) {
-  try {
-    // the normal Cognito approach would be:
-    // const resp = Auth.forgotPasswordSubmit(email, code, password);
-    const resp = await apiCall('PUT', `/users/reset-password`, { email, code, password })
-    return { ok: true, message: 'Ok' };
-  } catch (err: any) {
-    return { ok: false, message: err.message };
-  }
+  return apiCall('POST', `/users/reset-password`, { email: email.toLowerCase(), code, password })
 }
 
 export function signOut() {

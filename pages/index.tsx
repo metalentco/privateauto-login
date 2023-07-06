@@ -10,6 +10,7 @@ import { Auth } from 'aws-amplify';
 import { initConfig } from "@/libs/cognito";
 import { parseUrlWithPathParams, useAuthParams } from "@/libs/hooks/useAppPathParams";
 import { useRouter } from "next/router";
+import { SocialSignin } from "@/components/SocialSignin";
 
 const basePath = process.env.BASEPATH || '';
 let redirectUrl: string;
@@ -108,7 +109,7 @@ const Home = () => {
             </div>
             <div className="py-2">
               <input
-                type="text"
+                type="email"
                 className="border-[#9797aa] focus:border-[#00a0c7] form-control w-full block px-4 py-2 text-base font-medium bg-white bg-clip-padding border border-solid  rounded m-0"
                 placeholder="Email address"
                 value={email}
@@ -206,6 +207,7 @@ const Home = () => {
               </Link>
             </div>
             <hr className="text-[#c4c4c4] my-2" />
+            <SocialSignin/>
             <Footer />
           </div>
         </div>

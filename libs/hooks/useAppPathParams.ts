@@ -18,12 +18,8 @@ export function useAuthParams() {
 }
 
 export function parseUrlWithPathParams(baseUrl: string, pathParams: string) {
-  if (pathParams) {
-    const result = baseUrl.endsWith('/')
-      ? `${baseUrl.slice(0, -1)}${pathParams}`
-      : `${baseUrl}${pathParams}`;
-    console.log('result: ', result);
-    return result;
+  if(pathParams) {
+    return baseUrl.endsWith('/') ? `${baseUrl.slice(0, -1)}${pathParams}` : `${baseUrl}${pathParams}`
   }
   return baseUrl;
 }
