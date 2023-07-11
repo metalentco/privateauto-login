@@ -13,6 +13,9 @@ export function useAuthParams() {
     if (router.query.isListingAction) {
       return `/listing/${router.query.isListingAction}`;
     }
+    if (router.query.isFastTrackDeal) {
+      return `/deal-now/${router.query.isFastTrackDeal}`;
+    }
     return '';
   }, [router.query]);
 }
