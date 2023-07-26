@@ -19,7 +19,6 @@ import {
   useAuthParams,
 } from "@/libs/hooks/useAppPathParams";
 import { SocialSignin } from "@/components/SocialSignin";
-import { useActionValue } from "@/libs/contexts/contextAction";
 
 const basePath = process.env.BASEPATH || "";
 
@@ -51,7 +50,6 @@ const Signup = () => {
   const [action, setAction] = useState<Action>(Action.OPEN);
   const [lastError, setLastError] = useState<string>("");
   const [redirectUrl, setRedirectUrl] = useState<string>("");
-  const { actionRedirectUrl, setActionRedirectUrl } = useActionValue();
 
   const pathParams = useAuthParams();
 
@@ -68,22 +66,15 @@ const Signup = () => {
           { formSubmitted: true, formName: "signup" },
           "*"
         );
+
       if (window.parent) {
-        if (actionRedirectUrl != "") {
-          window.parent.location.replace(actionRedirectUrl);
-        } else {
-          window.parent.location.replace(
-            parseUrlWithPathParams(redirectUrl, pathParams)
-          );
-        }
+        window.parent.location.replace(
+          parseUrlWithPathParams(redirectUrl, pathParams)
+        );
       } else {
-        if (actionRedirectUrl != "") {
-          window.location.replace(actionRedirectUrl);
-        } else {
-          window.location.replace(
-            parseUrlWithPathParams(redirectUrl, pathParams)
-          );
-        }
+        window.location.replace(
+          parseUrlWithPathParams(redirectUrl, pathParams)
+        );
       }
     } else if (action === Action.FAIL && window) {
       window?.parent &&
@@ -144,16 +135,6 @@ const Signup = () => {
   useEffect(() => {
     if (!appOpen && window) window.close();
   }, [appOpen]);
-
-  useEffect(() => {
-    const fav_url = router.query.fav_url;
-    if (fav_url != undefined && fav_url != "" && typeof fav_url == "string") {
-      const actionRedirectUrl =
-        (process.env.NEXT_PUBLIC_APP_URL || "") + fav_url;
-      setActionRedirectUrl(actionRedirectUrl);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.query]);
 
   return (
     <div className="w-full bg-[#fff]">

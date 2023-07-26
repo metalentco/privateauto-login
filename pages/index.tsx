@@ -14,7 +14,6 @@ import {
 } from "@/libs/hooks/useAppPathParams";
 import { useRouter } from "next/router";
 import { SocialSignin } from "@/components/SocialSignin";
-import { useActionValue } from "@/libs/contexts/contextAction";
 
 const basePath = process.env.BASEPATH || "";
 let redirectUrl: string;
@@ -36,7 +35,6 @@ const Home = () => {
   const [errorMsg, setErrorMsg] = useState<string>();
   const pathParams = useAuthParams();
   const router = useRouter();
-  const { actionRedirectUrl } = useActionValue();
 
   useEffect(() => {
     initConfig(window).then((cfg: any) => {
@@ -49,21 +47,13 @@ const Home = () => {
       window.close();
     } else if (action === Action.LOGIN) {
       if (window.parent) {
-        if (actionRedirectUrl != "") {
-          window.parent.location.replace(actionRedirectUrl);
-        } else {
-          window.parent.location.replace(
-            parseUrlWithPathParams(redirectUrl, pathParams)
-          );
-        }
+        window.parent.location.replace(
+          parseUrlWithPathParams(redirectUrl, pathParams)
+        );
       } else {
-        if (actionRedirectUrl != "") {
-          window.location.replace(actionRedirectUrl);
-        } else {
-          window.location.replace(
-            parseUrlWithPathParams(redirectUrl, pathParams)
-          );
-        }
+        window.location.replace(
+          parseUrlWithPathParams(redirectUrl, pathParams)
+        );
       }
       window.location.replace(parseUrlWithPathParams(redirectUrl, pathParams));
     }

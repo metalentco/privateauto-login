@@ -2,7 +2,6 @@ import "../styles/globals.css";
 import { fontRegularStyles, fontBoldStyles } from "../libs/fontStyles";
 import type { AppProps } from "next/app";
 import Script from "next/script";
-import { ActionProvider } from "@/libs/contexts/contextAction";
 
 declare global {
   interface Window {
@@ -125,9 +124,7 @@ export default function App({ Component, pageProps }: AppProps) {
           })(window, document, "script", "dataLayer", "GTM-NF432VS");`,
         }}
       />
-      <ActionProvider>
-        <Component {...pageProps} />
-      </ActionProvider>
+      <Component {...pageProps} />
     </>
   );
 }

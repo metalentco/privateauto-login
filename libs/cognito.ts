@@ -1,8 +1,8 @@
-import hmacSHA256 from 'crypto-js/hmac-sha256';
-import Base64 from 'crypto-js/enc-base64';
-import { Amplify, Auth } from 'aws-amplify';
+import hmacSHA256 from "crypto-js/hmac-sha256";
+import Base64 from "crypto-js/enc-base64";
+import { Amplify, Auth } from "aws-amplify";
 
-const secret = 'EZScretJwtKey';
+const secret = "EZScretJwtKey";
 let userAgent: string;
 let apiUrl: string;
 
@@ -19,7 +19,10 @@ function getParamterHash(userAgent: string, url: string, body = {}) {
 async function getConfig(windowRef: any): Promise<any> {
   userAgent = windowRef.navigator.userAgent;
   const base = windowRef.location?.hostname;
-  const appDomain = windowRef.location.hostname === 'localhost' ? 'localhost' : windowRef.location.hostname.split('.').slice(1).join('.');
+  const appDomain =
+    windowRef.location.hostname === "localhost"
+      ? "localhost"
+      : windowRef.location.hostname.split(".").slice(1).join(".");
   const appUrl = `https://app.${base}`;
 
   let region = process.env.NEXT_PUBLIC_REGION;
@@ -29,14 +32,14 @@ async function getConfig(windowRef: any): Promise<any> {
   let redirectUrl = process.env.NEXT_PUBLIC_REDIRECT_URL;
   let authDomain = process.env.NEXT_PUBLIC_AUTH_DOMAIN;
   let appConfigUrl = process.env.NEXT_PUBLIC_CONFIG_URL;
-  apiUrl = process.env.NEXT_PUBLIC_API_URL ?? appConfigUrl ?? '';
+  apiUrl = process.env.NEXT_PUBLIC_API_URL ?? appConfigUrl ?? "";
 
   if (appConfigUrl) {
     const appConfg = await fetch(`${appConfigUrl}/api/appconfig`, {
       headers: {
-        'X-PA': getParamterHash(userAgent, '/api/appconfig', {}),
-        'x-client': userAgent,
-        'accept': 'application/json'
+        "X-PA": getParamterHash(userAgent, "/api/appconfig", {}),
+        "x-client": userAgent,
+        accept: "application/json",
       },
     })
       .then((res) => res.json())
@@ -63,20 +66,20 @@ async function getConfig(windowRef: any): Promise<any> {
       userPoolWebClientId: amplifyWebClientId,
       cookieStorage: {
         domain: appDomain,
-        path: '/',
+        path: "/",
         expires: 365,
-        sameSite: 'lax',
-        secure: appDomain !== 'localhost',
+        sameSite: "lax",
+        secure: appDomain !== "localhost",
       },
       oauth: {
         domain: authDomain ?? base,
-        scope: ['email', 'profile', 'openid', 'aws.cognito.signin.user.admin'],
+        scope: ["email", "profile", "openid", "aws.cognito.signin.user.admin"],
         redirectSignIn: `${appUrl}/auth/login`,
         redirectSignOut: `${appUrl}/auth/logout`,
-        responseType: 'token',
+        responseType: "token",
       },
     },
-  }
+  };
 
   await Amplify.configure(awsConfig);
 
@@ -84,13 +87,14 @@ async function getConfig(windowRef: any): Promise<any> {
     appUrl,
     appDomain,
     userAgent,
-    redirectUrl: redirectUrl ?? appUrl
+    redirectUrl: redirectUrl ?? appUrl,
   };
-
 }
 
-let configDone = (c: any) => { };
-const config: Promise<any> = new Promise((resolve, reject) => { configDone = resolve; });
+let configDone = (c: any) => {};
+const config: Promise<any> = new Promise((resolve, reject) => {
+  configDone = resolve;
+});
 
 export async function initConfig(windowRef: any, e: any = undefined) {
   getConfig(windowRef)
@@ -103,14 +107,18 @@ const currentUser: any = async () => {
   try {
     const resp = await Auth.currentAuthenticatedUser();
     return { ok: true, ...resp };
-  }
-  catch (err: any) {
+  } catch (err: any) {
     return { ok: false, message: err.message };
   }
-}
+};
 
-export async function signUp(email: string, password: string, family_name: string, given_name: string) {
-  email = email.toLowerCase()
+export async function signUp(
+  email: string,
+  password: string,
+  family_name: string,
+  given_name: string
+) {
+  email = email.toLowerCase();
   await Auth.signOut();
   await Auth.signUp({
     username: email,
@@ -121,26 +129,29 @@ export async function signUp(email: string, password: string, family_name: strin
       given_name,
     },
   });
-  await Auth.signIn(email, password)
+  await Auth.signIn(email, password);
 }
 
 export async function signIn(email: string, password: string): Promise<Result> {
   try {
     const user = await Auth.signIn(email, password);
 
-    if (user.challengeName === 'SMS_MFA' || user.challengeName === 'SOFTWARE_TOKEN_MFA') {
-      const code = ''; // from user input
-      const mfaType = undefined;  // MFA Type e.g. SMS_MFA, SOFTWARE_TOKEN_MFA
+    if (
+      user.challengeName === "SMS_MFA" ||
+      user.challengeName === "SOFTWARE_TOKEN_MFA"
+    ) {
+      const code = ""; // from user input
+      const mfaType = undefined; // MFA Type e.g. SMS_MFA, SOFTWARE_TOKEN_MFA
       const loggedUser = await Auth.confirmSignIn(user, code, mfaType);
-    } else if (user.challengeName === 'NEW_PASSWORD_REQUIRED') {
+    } else if (user.challengeName === "NEW_PASSWORD_REQUIRED") {
       // this is a hack to bypass the new password requirement
       const newPassword = password;
       const loggedUser = await Auth.completeNewPassword(user, newPassword);
-    } else if (user.challengeName === 'MFA_SETUP') {
+    } else if (user.challengeName === "MFA_SETUP") {
       // This happens when the MFA method is TOTP
       Auth.setupTOTP(user);
-    } else if (user.challengeName === 'SELECT_MFA_TYPE') {
-      const mfaType = undefined;  // MFA Type e.g. SMS_MFA, SOFTWARE_TOKEN_MFA from user
+    } else if (user.challengeName === "SELECT_MFA_TYPE") {
+      const mfaType = undefined; // MFA Type e.g. SMS_MFA, SOFTWARE_TOKEN_MFA from user
       user.sendMFASelectionAnswer(mfaType, {
         onFailure: (err: any) => {
           console.error(err);
@@ -150,26 +161,25 @@ export async function signIn(email: string, password: string): Promise<Result> {
         },
         totpRequired: (challengeName: string, parameters: any) => {
           // Auth.confirmSignIn with TOTP code
-        }
+        },
       });
     } else {
       // The user directly signs in
       console.log(user);
     }
-    return { ok: true, message: 'Ok' };
-
+    return { ok: true, message: "Ok" };
   } catch (err: any) {
-    if (err.code === 'UserNotConfirmedException') {
+    if (err.code === "UserNotConfirmedException") {
       // The error happens if the user didn't finish the confirmation step when signing up
       // In this case you need to resend the code and confirm the user
       // About how to resend the code and confirm the user, please check the signUp part
-    } else if (err.code === 'PasswordResetRequiredException') {
+    } else if (err.code === "PasswordResetRequiredException") {
       // The error happens when the password is reset in the Cognito console
       // In this case you need to call forgotPassword to reset the password
       // Please check the Forgot Password part.
-    } else if (err.code === 'NotAuthorizedException') {
+    } else if (err.code === "NotAuthorizedException") {
       // The error happens when the incorrect password is provided
-    } else if (err.code === 'UserNotFoundException') {
+    } else if (err.code === "UserNotFoundException") {
       // The error happens when the supplied username/email does not exist in the Cognito user pool
     } else {
       console.log(err);
@@ -178,33 +188,38 @@ export async function signIn(email: string, password: string): Promise<Result> {
   }
 }
 
-
 async function apiCall(method: string, path: string, body: any) {
-  const url = `/api${path.startsWith('/') ? '' : '/'}${path}`
+  const url = `/api${path.startsWith("/") ? "" : "/"}${path}`;
   const response = await fetch(`${apiUrl}${url}`, {
     method,
     headers: {
-      'X-PA': getParamterHash(userAgent, url, body ?? {}),
-      'x-client': userAgent,
-      'content-type': 'application/json',
-      'accept': 'application/json'
+      "X-PA": getParamterHash(userAgent, url, body ?? {}),
+      "x-client": userAgent,
+      "content-type": "application/json",
+      accept: "application/json",
     },
-    body: JSON.stringify(body)
-  })
-  const isOk = response.ok
-  const data = await response.json()
-  if(!isOk) {
-    throw new Error(data?.message || 'Network error')
+    body: JSON.stringify(body),
+  });
+  const isOk = response.ok;
+  const data = await response.json();
+  if (!isOk) {
+    throw new Error(data?.message || "Network error");
   }
-  return data
+  return data;
 }
 
 export async function forgotPassword(email: string) {
-  return apiCall('POST', `/users/forgot-password`, { email: email.toLowerCase() })
+  return apiCall("POST", `/users/forgot-password`, {
+    email: email.toLowerCase(),
+  });
 }
 
 export async function ResetPassword(email: any, password: any, code: any) {
-  return apiCall('POST', `/users/reset-password`, { email: email.toLowerCase(), code, password })
+  return apiCall("POST", `/users/reset-password`, {
+    email: email.toLowerCase(),
+    code,
+    password,
+  });
 }
 
 export function signOut() {
