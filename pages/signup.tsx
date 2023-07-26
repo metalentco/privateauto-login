@@ -148,7 +148,8 @@ const Signup = () => {
   useEffect(() => {
     const fav_url = router.query.fav_url;
     if (fav_url != undefined && fav_url != "" && typeof fav_url == "string") {
-      const actionRedirectUrl = process.env.NEXT_PUBLIC_APP_URL + fav_url;
+      const actionRedirectUrl =
+        (process.env.NEXT_PUBLIC_APP_URL || "") + fav_url;
       setActionRedirectUrl(actionRedirectUrl);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
