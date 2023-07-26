@@ -1,7 +1,8 @@
-import '../styles/globals.css';
-import { fontRegularStyles, fontBoldStyles } from '../libs/fontStyles';
-import type { AppProps } from 'next/app';
-import Script from 'next/script';
+import "../styles/globals.css";
+import { fontRegularStyles, fontBoldStyles } from "../libs/fontStyles";
+import type { AppProps } from "next/app";
+import Script from "next/script";
+import { ActionProvider } from "@/libs/contexts/contextAction";
 
 declare global {
   interface Window {
@@ -22,10 +23,10 @@ export default function App({ Component, pageProps }: AppProps) {
       </style>
       <Script
         async
-        src='https://www.googletagmanager.com/gtag/js?id=G-JZE2T8F8ME'
+        src="https://www.googletagmanager.com/gtag/js?id=G-JZE2T8F8ME"
       />
       <Script
-        id='datalayer'
+        id="datalayer"
         dangerouslySetInnerHTML={{
           __html: `
             window.dataLayer = window.dataLayer || [];
@@ -36,7 +37,7 @@ export default function App({ Component, pageProps }: AppProps) {
         }}
       />
       <Script
-        id='reddit'
+        id="reddit"
         dangerouslySetInnerHTML={{
           __html: `
         !(function (w, d) {
@@ -63,7 +64,7 @@ export default function App({ Component, pageProps }: AppProps) {
         }}
       />
       <Script
-        id='gtag0'
+        id="gtag0"
         dangerouslySetInnerHTML={{
           __html: `
             !(function (f, b, e, v, n, t, s) {
@@ -96,10 +97,10 @@ export default function App({ Component, pageProps }: AppProps) {
       />
       <Script
         async
-        src='https://www.googletagmanager.com/gtag/js?id=G-JZE2T8F8ME'
+        src="https://www.googletagmanager.com/gtag/js?id=G-JZE2T8F8ME"
       />
       <Script
-        id='gtag'
+        id="gtag"
         dangerouslySetInnerHTML={{
           __html: `
   window.dataLayer = window.dataLayer || [];
@@ -110,7 +111,7 @@ export default function App({ Component, pageProps }: AppProps) {
         }}
       />
       <Script
-        id='gtag1'
+        id="gtag1"
         dangerouslySetInnerHTML={{
           __html: `(function (w, d, s, l, i) {
             w[l] = w[l] || [];
@@ -124,7 +125,9 @@ export default function App({ Component, pageProps }: AppProps) {
           })(window, document, "script", "dataLayer", "GTM-NF432VS");`,
         }}
       />
-      <Component {...pageProps} />
+      <ActionProvider>
+        <Component {...pageProps} />
+      </ActionProvider>
     </>
   );
 }
