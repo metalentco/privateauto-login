@@ -6,17 +6,23 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Loading from "@/components/Loading";
 import { checkEmail } from "@/libs/utils";
-import { Auth } from 'aws-amplify';
+import { Auth } from "aws-amplify";
 import { initConfig } from "@/libs/cognito";
-import { parseUrlWithPathParams, useAuthParams } from "@/libs/hooks/useAppPathParams";
+import {
+  parseUrlWithPathParams,
+  useAuthParams,
+} from "@/libs/hooks/useAppPathParams";
 import { useRouter } from "next/router";
 import { SocialSignin } from "@/components/SocialSignin";
 
-const basePath = process.env.BASEPATH || '';
+const basePath = process.env.BASEPATH || "";
 let redirectUrl: string;
 
-
-enum Action { OPEN, CLOSE, LOGIN };
+enum Action {
+  OPEN,
+  CLOSE,
+  LOGIN,
+}
 
 const Home = () => {
   const [showPassword, setShowPassword] = useState<Boolean>(false);
@@ -27,23 +33,31 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState<Boolean>(false);
   const [action, setAction] = useState<Action>(Action.OPEN);
   const [errorMsg, setErrorMsg] = useState<string>();
-  const pathParams = useAuthParams()
-  const router = useRouter()
+  const pathParams = useAuthParams();
+  const router = useRouter();
 
   useEffect(() => {
-    initConfig(window).then((cfg: any) => { redirectUrl = cfg.redirectUrl });
+    initConfig(window).then((cfg: any) => {
+      redirectUrl = cfg.redirectUrl;
+    });
   }, []);
 
   useEffect(() => {
     if (action === Action.CLOSE) {
       window.close();
     } else if (action === Action.LOGIN) {
-      if (window.parent)
-        window.parent.location.replace(parseUrlWithPathParams(redirectUrl, pathParams));
-      else
-        window.location.replace(parseUrlWithPathParams(redirectUrl, pathParams));
+      if (window.parent) {
+        window.parent.location.replace(
+          parseUrlWithPathParams(redirectUrl, pathParams)
+        );
+      } else {
+        window.location.replace(
+          parseUrlWithPathParams(redirectUrl, pathParams)
+        );
+      }
+      window.location.replace(parseUrlWithPathParams(redirectUrl, pathParams));
     }
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [action, pathParams]);
 
   const submit = async () => {
@@ -53,26 +67,23 @@ const Home = () => {
     if (email != "" && checkEmail(email) && password != "") {
       setIsLoading(true);
       try {
-        await Auth.signOut()
+        await Auth.signOut();
         const result = await Auth.signIn(email, password);
-        console.log(result);
         setAction(Action.LOGIN);
       } catch (e: any) {
         switch (e.name) {
-          case 'UserNotFoundException':
-          case 'NotAuthorizedException':
-            setErrorMsg('User name or password was entered incorrectly.');
+          case "UserNotFoundException":
+          case "NotAuthorizedException":
+            setErrorMsg("User name or password was entered incorrectly.");
             break;
           default:
             console.log(JSON.stringify(e));
-            setErrorMsg('There was a problem signing in to your account.');
-
+            setErrorMsg("There was a problem signing in to your account.");
         }
       }
     }
     setIsLoading(false);
-  }
-
+  };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
@@ -94,14 +105,19 @@ const Home = () => {
       </Head>
       <div className="w-full bg-[#fff]">
         <div
-          className={`w-full flex justify-center py-8 ${isLoading && "opacity-40"
-            }`}
+          className={`w-full flex justify-center py-8 ${
+            isLoading && "opacity-40"
+          }`}
         >
           <div className="w-4/5 sm:w-[60%]">
             <div className="text-[2rem] text-[#212529] font-bold">Sign in</div>
             <div className="text-base text-[#212529] font-medium py-2">
               New to Here?&nbsp;
-              <Link href={`/signup?${new URLSearchParams(router.query as any).toString()}`}>
+              <Link
+                href={`/signup?${new URLSearchParams(
+                  router.query as any
+                ).toString()}`}
+              >
                 <span className="text-[#00b3de] underline">
                   Create an account
                 </span>
@@ -179,7 +195,7 @@ const Home = () => {
               )}
             </div>
             <div className="py-2">
-              {errorMsg && errorMsg != '' ? (
+              {errorMsg && errorMsg != "" ? (
                 <div className="text-xs text-left text-[#ed0a0a] pt-2">
                   {errorMsg}
                 </div>
@@ -194,20 +210,28 @@ const Home = () => {
               </button>
             </div>
             <div className="py-2">
-              <Link href={`/forgot?${new URLSearchParams(router.query as any).toString()}`}>
+              <Link
+                href={`/forgot?${new URLSearchParams(
+                  router.query as any
+                ).toString()}`}
+              >
                 <span className="text-[#00b3de] font-medium">
                   Forgot Password?
                 </span>
               </Link>
               &nbsp;or&nbsp;
-              <Link href={`/code?${new URLSearchParams(router.query as any).toString()}`}>
+              <Link
+                href={`/code?${new URLSearchParams(
+                  router.query as any
+                ).toString()}`}
+              >
                 <span className="text-[#00b3de] font-medium">
                   Enter code here
                 </span>
               </Link>
             </div>
             <hr className="text-[#c4c4c4] my-2" />
-            <SocialSignin/>
+            <SocialSignin />
             <Footer />
           </div>
         </div>
