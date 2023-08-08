@@ -16,6 +16,9 @@ export function useAuthParams() {
     if (router.query.isFastTrackDeal) {
       return `/deal-now/${router.query.isFastTrackDeal}`;
     }
+    if (router.query.isFastTrackDealStart) {
+      return `/deals?dealNowStart=${router.query.isFastTrackDealStart}`;
+    }
     if (router.query.isFavMark) {
       return `/listing/${router.query.isFavMark}`;
     }
