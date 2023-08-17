@@ -7,6 +7,10 @@ const ssoProviders = [
   {
     icon: `${basePath}/assets/logo-google.svg`,
     type: CognitoHostedUIIdentityProvider.Google
+  },
+  {
+    icon: `${basePath}/assets/logo-apple.svg`,
+    type: CognitoHostedUIIdentityProvider.Apple
   }
 ]
 
@@ -18,6 +22,7 @@ export function SocialSignin() {
   return (
     <>
       <p className="text-sm text-[#808080] font-normal leading-5	my-4">Or signin with</p>
+      <div className="space-y-4">
         {ssoProviders.map(provider => (
           <button key={provider.type} onClick={() => initiateSocialSignin(provider.type)} className="w-full flex justify-center bg-[#f7f9fc] py-3 px-4 rounded cursor-pointer">
             <Image
@@ -28,6 +33,7 @@ export function SocialSignin() {
             />
           </button>
         ))}
+      </div>
     </>
   )
 }
