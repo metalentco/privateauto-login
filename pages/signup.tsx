@@ -53,11 +53,11 @@ const Signup = () => {
 
   const pathParams = useAuthParams();
 
-  useEffect(() => {
-    initConfig(window).then((cfg: any) => {
-      setRedirectUrl(cfg.redirectUrl);
-    });
-  }, []);
+  // useEffect(() => {
+  //   initConfig(window).then((cfg: any) => {
+  //     setRedirectUrl(cfg.redirectUrl);
+  //   });
+  // }, []);
 
   useEffect(() => {
     if (action === Action.SIGNUP) {
