@@ -104,15 +104,17 @@ const Signup = () => {
     ) {
       try {
         setIsLoading(true);
-        await signUp(email, password, lastname, firstname);
-        setAction(Action.SIGNUP);
+        // await signUp(email, password, lastname, firstname);
+        setTimeout(() => {
+          setAction(Action.SIGNUP);
 
-        window.fbq("track", "Create Account");
-        window.rdt("track", {
-          currency: "USD",
-          transactionId: email,
-          value: 100,
-        });
+          window.fbq("track", "Create Account");
+          window.rdt("track", {
+            currency: "USD",
+            transactionId: email,
+            value: 100,
+          });
+        }, 2000);
         setIsLoading(false);
       } catch (err: any) {
         setLastError(err.message);
