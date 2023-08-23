@@ -53,11 +53,11 @@ const Signup = () => {
 
   const pathParams = useAuthParams();
 
-  // useEffect(() => {
-  //   initConfig(window).then((cfg: any) => {
-  //     setRedirectUrl(cfg.redirectUrl);
-  //   });
-  // }, []);
+  useEffect(() => {
+    initConfig(window).then((cfg: any) => {
+      setRedirectUrl(cfg.redirectUrl);
+    });
+  }, []);
 
   useEffect(() => {
     if (action === Action.SIGNUP) {
@@ -67,15 +67,17 @@ const Signup = () => {
           "*"
         );
 
-      if (window.parent) {
-        window.parent.location.replace(
-          parseUrlWithPathParams(redirectUrl, pathParams)
-        );
-      } else {
-        window.location.replace(
-          parseUrlWithPathParams(redirectUrl, pathParams)
-        );
-      }
+      setTimeout(() => {
+        if (window.parent) {
+          window.parent.location.replace(
+            parseUrlWithPathParams(redirectUrl, pathParams)
+          );
+        } else {
+          window.location.replace(
+            parseUrlWithPathParams(redirectUrl, pathParams)
+          );
+        }
+      }, 1000);
     } else if (action === Action.FAIL && window) {
       window?.parent &&
         window.parent.postMessage(
